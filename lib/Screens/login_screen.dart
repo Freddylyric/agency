@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'otp_verification_screen.dart';
+import 'package:agency_app/config.dart' as config;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -38,14 +39,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final phoneNumber = formatNumber(phoneNumberController.text);
     final password = passwordController.text;
+    print(phoneNumber);
+    print(password);
+    await _storage.write(key: 'password', value: password);
+    await _storage.write(key: 'phone_number', value: phoneNumber);
 
     // API endpoint URL
-    final String apiUrl = 'https://payment.api.qrshqooroosh.com/v1/{company_code}/auth/v1/login';
+    final String apiUrl = '${config.baseUrl}auth/v1/login';
 
     // Request headers
     Map<String, String> headers = {
-      'X-App-Key': 'the_app_key_sent',
-      'X-Authorization': 'the_channel_key',
+      'X-App-Key': config.appKey,
+      'X-Authorization-Key': config.authorizationKey,
       'X-Requested-With': 'XMLHttpRequest',
       'Content-Type': 'application/json',
     };
@@ -58,52 +63,45 @@ class _LoginScreenState extends State<LoginScreen> {
     };
 
 
+    try{
 
-    Navigator.push(
-             context,
-             MaterialPageRoute(builder: (context) => OTPScreen()),
-           );
+      // Send the API request
+      http.Response response = await http.post(
+        Uri.parse(apiUrl),
+        headers: headers,
+        body: jsonEncode(requestBody),
+      );
 
-    // try{
-    //
-    //   // Send the API request
-    //   http.Response response = await http.post(
-    //     Uri.parse(apiUrl),
-    //     headers: headers,
-    //     body: jsonEncode(requestBody),
-    //   );
-    //
-    //   // Parse the response JSON
-    //   Map<String, dynamic> responseData = jsonDecode(response.body);
-    //
-    //   // Check the response status
-    //   if (response.statusCode == 200 && responseData['code'] == 'Success') {
-    //     // Successful authentication, initiate second level authentication
-    //     print('Authentication validated successfully.');
-    //     print('OTP sent via email / SMS. Verify account to continue.');
-    //
-    //
-    //
-    //     Navigator.push(
-    //       context,
-    //       MaterialPageRoute(builder: (context) => OTPScreen()),
-    //     );
-    //   } else {
-    //     // Failed authentication
-    //     String errorMessage = responseData['statusDescription'] ?? 'Unknown error';
-    //     print('Authentication failed: $errorMessage');
-    //   }
-    //
-    //
-    // }  catch (error) {
-    //   print('Error occurred while calling the API: $error');
-    // }
+      // Parse the response JSON
+      Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      // Check the response status
+      if (response.statusCode == 200 && responseData['code'] == 'Success') {
+        // Successful authentication, initiate second level authentication
+        print('Authentication validated successfully.');
+        print('OTP sent via email / SMS. Verify account to continue.');
+
+
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => OTPScreen()),
+        );
+      } else {
+        // Failed authentication
+        String errorMessage = responseData['statusDescription'] ?? 'Unknown error';
+        print('Authentication failed: $errorMessage');
+      }
+
+
+    }  catch (error) {
+      print('Error occurred while calling the API: $error');
+    }
     setState(() {
       _isLoading = false;
     });
 
-    await _storage.write(key: 'password', value: password);
-    await _storage.write(key: 'phone_number', value: phoneNumber);
+
 
 
   }
@@ -214,13 +212,13 @@ class _LoginScreenState extends State<LoginScreen> {
     String subst = phone.substring(0, 4);
 
     if (subst.startsWith('+254')) {
-      return phone;
+      return phone.substring(1);
     } else if (subst.startsWith('0')) {
-      return '+254${phone.substring(1)}';
+      return '254${phone.substring(1)}';
     } else if (phone.startsWith('254')) {
-      return '+$phone';
+      return phone;
     } else {
-      return '+254$phone';
+      return '254$phone';
     }
   }
 
