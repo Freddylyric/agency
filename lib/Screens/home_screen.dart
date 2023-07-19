@@ -243,31 +243,88 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
-  Future<List<dynamic>> _fetchTransactions() async {
-    // API endpoint URL
-    final String apiUrl = '${config.baseUrl}payments/v1/view?start=2023-05-01&end=2023-07-01&status=1';
+  // Future<List<dynamic>> _fetchTransactions() async {
+  //   // API endpoint URL
+  //   final String apiUrl = '${config.baseUrl}payments/v1/view?start=2023-05-01&end=2023-07-01&status=1';
+  //
+  //   // Request headers
+  //   Map<String, String> headers = {
+  //     'X-App-Key': config.appKey,
+  //     'X-Authorization-Key': config.authorizationKey,
+  //     'X-Requested-With': config.requestedWith,
+  //     'Content-Type':  config.contentType,
+  //     'X-Token-Key':  widget.accessToken,
+  //   };
+  //
+  //   // Request parameters
+  //   // Map<String, String> parameters = {
+  //   //   'start': '2023-06-01',
+  //   //   'end': '2023-07-30',
+  //   // };
+  //
+  //   try {
+  //     // Send the API request
+  //     http.Response response = await http.get(
+  //       Uri.parse(apiUrl),
+  //       headers: headers,
+  //
+  //     );
+  //
+  //     // Parse the response JSON
+  //     Map<String, dynamic> responseData = jsonDecode(response.body);
+  //
+  //     // Check the response status
+  //     if (response.statusCode == 200 && responseData['code'] == 'Success') {
+  //      // print(responseData);
+  //       print("trans fetched");
+  //       // Successful API request, extract the transactions data
+  //       List<dynamic> transactions = responseData['data']['data'];
+  //       print('transactions are {$transactions}');
+  //
+  //       // Filter transactions based on status
+  //
+  //
+  //       List<dynamic> successfulTransactions1 = transactions
+  //           .where((transaction) => transaction['status'].trim() == '1')
+  //           .toList();
+  //
+  //
+  //
+  //       List<dynamic> pendingTransactions1 = transactions
+  //           .where((transaction) => transaction['status'] == '2')
+  //           .toList();
+  //
+  //       successfulTransactions = successfulTransactions1;
+  //       pendingTransactions = pendingTransactions1;
+  //
+  //
+  //
+  //       print('success are $successfulTransactions');
+  //       print('pending are {$pendingTransactions}');
+  //       // Return both lists
+  //       return [successfulTransactions1, pendingTransactions1];
+  //
+  //      // successfulTransactions = successfulTransactions1;
+  //     } else {
+  //       // Failed API request
+  //       String errorMessage = responseData['statusDescription'] ?? 'Unknown error';
+  //       print('Fetch Failed: $errorMessage');
+  //       throw Exception('API request failed');
+  //     }
+  //   } catch (error) {
+  //     print('Error occurred while calling the API: $error');
+  //     throw Exception('API request failed');
+  //   }
+  // }
 
-    // Request headers
-    Map<String, String> headers = {
-      'X-App-Key': config.appKey,
-      'X-Authorization-Key': config.authorizationKey,
-      'X-Requested-With': config.requestedWith,
-      'Content-Type':  config.contentType,
-      'X-Token-Key':  widget.accessToken,
-    };
 
-    // Request parameters
-    // Map<String, String> parameters = {
-    //   'start': '2023-06-01',
-    //   'end': '2023-07-30',
-    // };
 
+  Future<List<dynamic>> _fetchTransactionsByStatus(String apiUrl, Map<String, String> headers) async {
     try {
       // Send the API request
       http.Response response = await http.get(
         Uri.parse(apiUrl),
         headers: headers,
-
       );
 
       // Parse the response JSON
@@ -275,36 +332,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Check the response status
       if (response.statusCode == 200 && responseData['code'] == 'Success') {
-       // print(responseData);
-        print("trans fetched");
         // Successful API request, extract the transactions data
         List<dynamic> transactions = responseData['data']['data'];
-        print('transactions are {$transactions}');
-
-        // Filter transactions based on status
+        // Return the transactions list
 
 
-        List<dynamic> successfulTransactions1 = transactions
-            .where((transaction) => transaction['status'].trim() == '1')
-            .toList();
-
-
-
-        List<dynamic> pendingTransactions1 = transactions
-            .where((transaction) => transaction['status'] == '2')
-            .toList();
-
-        successfulTransactions = successfulTransactions1;
-        pendingTransactions = pendingTransactions1;
-
-
-
-        print('success are $successfulTransactions');
-        print('pending are {$pendingTransactions}');
-        // Return both lists
-        return [successfulTransactions1, pendingTransactions1];
-
-       // successfulTransactions = successfulTransactions1;
+        return transactions;
       } else {
         // Failed API request
         String errorMessage = responseData['statusDescription'] ?? 'Unknown error';
@@ -316,6 +349,42 @@ class _HomeScreenState extends State<HomeScreen> {
       throw Exception('API request failed');
     }
   }
+
+
+
+
+  // Function to fetch successful transactions
+  Future<List<dynamic>> fetchSuccessfulTransactions() async {
+    final String apiUrl = config.successfulTransactions;
+
+    Map<String, String> headers = {
+      'X-App-Key': config.appKey,
+      'X-Authorization-Key': config.authorizationKey,
+      'X-Requested-With': config.requestedWith,
+      'Content-Type': config.contentType,
+      'X-Token-Key': widget.accessToken,
+    };
+
+    // Call the helper function to fetch successful transactions
+    return _fetchTransactionsByStatus(apiUrl, headers);
+  }
+
+// Function to fetch pending transactions
+  Future<List<dynamic>> fetchPendingTransactions() async {
+    final String apiUrl = config.pendingTransactions;
+
+    Map<String, String> headers = {
+      'X-App-Key': config.appKey,
+      'X-Authorization-Key': config.authorizationKey,
+      'X-Requested-With': config.requestedWith,
+      'Content-Type': config.contentType,
+      'X-Token-Key': widget.accessToken,
+    };
+
+    // Call the helper function to fetch pending transactions
+    return _fetchTransactionsByStatus(apiUrl, headers);
+  }
+
 
 
 
@@ -342,7 +411,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SizedBox(height: 30,),
+                        SizedBox(height: 60,),
                         Text("Your session has expired,", style: GoogleFonts.inter(fontSize: 16, color: Colors.black,),),
                         SizedBox(height: 5,),
                         Text("Please login again", style: GoogleFonts.inter(fontSize: 16, color: Colors.black,),),
@@ -537,11 +606,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     child: TextButton(
                                       onPressed: () {
-
-
                                       },
                                       child: Text(
-                                        "2",
+            pendingTransactions.length.toString(),
                                         style: GoogleFonts.inter(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 20,
@@ -633,9 +700,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                                   ]
                               ),
-                              title: Text(transaction['client_name'], style: bodyTextBlackBigger,),
+                              title: Text(transaction['beneficiaryName'], style: bodyTextBlackBigger,),
                               subtitle: Text(transaction['created_at'], style: bodyTextBlack,),
-                              trailing: Text('${transaction['amount']} ${transaction['currencyReceive']}', style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700,),),
+                              trailing: Text('${transaction['currencyReceive']} ${transaction['amount']}' , style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700,),),
                             );
                           }),
                     )
@@ -658,6 +725,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
 // Helper method to fetch all required data
   Future<void> _fetchData() async {
+    try {
+      List<dynamic> successfulTransactions1 = await fetchSuccessfulTransactions();
+      List<dynamic> pendingTransactions1 = await fetchPendingTransactions();
+
+      successfulTransactions = successfulTransactions1;
+      pendingTransactions = pendingTransactions1;
+
+      // Do whatever you need with the fetched transactions
+      print('Successful Transactions: $successfulTransactions');
+      print('Pending Transactions: $pendingTransactions');
+    } catch (error) {
+      // Handle errors here
+    }
 
 
     // Fetch data simultaneously using Future.wait()
@@ -665,7 +745,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _fetchCompany(),
       _fetchBalance(),
       _fetchCommission(),
-      _fetchTransactions()
+
     ];
 
     // Wait for all data to be fetched before returning

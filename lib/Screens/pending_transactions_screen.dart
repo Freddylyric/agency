@@ -52,9 +52,9 @@ class PendingTransactionsScreen extends StatelessWidget {
 
                 ]
             ),
-            title: Text(transaction['client_name'], style: bodyTextBlackBigger,),
+            title: Text(transaction['beneficiaryName'], style: bodyTextBlackBigger,),
             subtitle: Text(transaction['created_at'], style: bodyTextBlack,),
-            trailing: Text('${transaction['amount']} ${transaction['currencyReceive']}', style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700,),),
+            trailing: Text('${transaction['currencyReceive']}${transaction['amount']} ', style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700,),),
           );
         },
       ),
