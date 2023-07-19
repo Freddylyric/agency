@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:agency_app/Screens/User%20authentication/request_otp_screen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
@@ -19,7 +20,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final  _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
   final phoneNumberController = TextEditingController();
   final passwordController = TextEditingController();
   bool _obscurePin = true;
@@ -28,11 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
 
 
-
-
-  Future <void> _login() async {
-
-
+  Future<void> _login() async {
     setState(() {
       _isLoading = true;
     });
@@ -62,9 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
       'password': password,
     };
 
-
-    try{
-
+    try {
       // Send the API request
       http.Response response = await http.post(
         Uri.parse(apiUrl),
@@ -81,8 +76,6 @@ class _LoginScreenState extends State<LoginScreen> {
         print('Authentication validated successfully.');
         print('OTP sent via email / SMS. Verify account to continue.');
 
-
-
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => OTPScreen()),
@@ -92,18 +85,20 @@ class _LoginScreenState extends State<LoginScreen> {
         String errorMessage = responseData['statusDescription'] ?? 'Unknown error';
         print('Authentication failed: $errorMessage');
       }
-
-
-    }  catch (error) {
+    } catch (error) {
       print('Error occurred while calling the API: $error');
     }
+
     setState(() {
       _isLoading = false;
     });
+  }
 
 
-
-
+  void _handleLogin() {
+    if (_formKey.currentState!.validate()) {
+      _login();
+    }
   }
 
 
@@ -112,47 +107,53 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Scaffold(
-        body: Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                stops: [0.0146, 0.9879],
-                colors: [
-                  Color(0xFF00080F),
-                  Color(0xFF00284A),
-                ],
-                transform: GradientRotation(136.62 * (3.1415926 / 180.0)),
-              ),
+      body: SingleChildScrollView(
+        child: Container(
+          width: size.width,
+          height: size.height,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              stops: [0.0146, 0.9879],
+              colors: [
+                Color(0xFF00080F),
+                Color(0xFF00284A),
+              ],
+              transform: GradientRotation(136.62 * (3.1415926 / 180.0)),
             ),
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child:
-              Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: size.height*0.3 ,),
-                    Text(
-                      "Login",
-                      style: GoogleFonts.inter(fontSize: 32.0, fontWeight: FontWeight.w700, color: Colors.white),
-                    ),
-                    TextField(
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: size.height * 0.3),
+                Text(
+                  "Login",
+                  style: GoogleFonts.inter(
+                    fontSize: 32.0,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      TextField(
                       controller: phoneNumberController,
                       decoration: InputDecoration(
                         labelText: 'Phone Number',
                         labelStyle: bodyTextWhite,
-
                       ),
                       style: TextStyle(color: Colors.white),
                       keyboardType: TextInputType.phone,
-                    ),
-                    SizedBox(height: 16.0),
-                    TextField(
+                      onEditingComplete: _handleLogin
+                  ),
+
+                  SizedBox(height: 16.0),
+                  TextField(
                       controller: passwordController,
                       decoration: InputDecoration(
                         labelText: 'Password',
@@ -168,33 +169,50 @@ class _LoginScreenState extends State<LoginScreen> {
                             });
                           },
                         ),
+
                       ),
                       style: TextStyle(color: Colors.white),
                       obscureText: _obscurePin,
-
-
+                      onEditingComplete: _handleLogin
+                  ),
+                  SizedBox(height: 16.0),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RequestOTPScreen(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        "Forgot Password?",
+                        style: bodyTextWhite,
+                        textAlign: TextAlign.right,
+                      ),
                     ),
-                    Spacer(),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _login,
-                  style: ButtonStyleConstants.primaryButtonStyle,
-                  child: _isLoading
-                      ? const CircularProgressIndicator()
-                      : const Text('Login'),
-
+                  ),
+                  //Spacer(),
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : _login,
+                    style: ButtonStyleConstants.primaryButtonStyle,
+                    child: _isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text('Login'),
+                  ),
+                  SizedBox(height: 20),
+                    ]
+                  )
                 ),
-                  ],
-                ),
-
-              ),
-
-
-
-            )
-        ));
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
-
-
 
   String formatNumber(String phone) {
     if (phone.isEmpty) {
@@ -217,10 +235,8 @@ class _LoginScreenState extends State<LoginScreen> {
       return '254${phone.substring(1)}';
     } else if (phone.startsWith('254')) {
       return phone;
-    } else {
+    } else  {
       return '254$phone';
     }
   }
-
-
 }

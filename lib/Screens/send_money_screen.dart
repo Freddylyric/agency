@@ -1,3 +1,5 @@
+import 'package:agency_app/Screens/home_screen.dart';
+import 'package:agency_app/Screens/navigation.dart';
 import 'package:agency_app/Screens/payment_details_bottomsheet.dart';
 import 'package:agency_app/Utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +33,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(onPressed: () {
-          Navigator.pop(context);
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>NavPage(profileInfo: null, accessToken: null,)));
         }, icon: Icon(Icons.arrow_back_ios, color: Colors.black,)),//IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back_ios)),
         backgroundColor: Colors.white,
         title: Text('Send Money', style: bodyTextBlackBigger,),

@@ -61,7 +61,7 @@ final blueText = GoogleFonts.inter(
 );
 
 final whiteText = GoogleFonts.inter(
-  fontSize: 16,
+  fontSize: 14,
   fontWeight: FontWeight.w400,
   height: 18 / 12,
   letterSpacing: 1,

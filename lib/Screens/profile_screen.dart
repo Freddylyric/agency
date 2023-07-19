@@ -1,6 +1,10 @@
+import 'package:agency_app/Screens/User%20authentication/login_screen.dart';
+import 'package:agency_app/Screens/home_screen.dart';
+import 'package:agency_app/Screens/navigation.dart';
 import 'package:agency_app/Utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'add_funds_bottomsheet.dart';
 
@@ -12,6 +16,9 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final _storage = const FlutterSecureStorage();
+
+
   @override
   Widget build(BuildContext context) {
     final size =  MediaQuery.of(context).size;
@@ -21,7 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           elevation: 0,
           backgroundColor: Color(0xff00284A),
           leading: IconButton(onPressed: (){
-            Navigator.pop(context);
+            Navigator.push(context, MaterialPageRoute(builder: (context)=>NavPage(profileInfo: null, accessToken: null,)));
           }, icon: Icon(Icons.arrow_back_ios, color: Colors.white,)),
         ),
 
@@ -123,7 +130,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ),
                         ),
-                      )
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () async {
+
+                            await _storage.deleteAll();
+
+
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const LoginScreen()),
+                            );
+                          },
+                          child: ListTile(
+                            leading: Icon(Icons.circle, color: Colors.grey,),
+                            title: Text(
+                              "Log out", style: blueText,
+                            ),
+                          ),
+                        ),
+                      ),
                     ]
                 )
               )

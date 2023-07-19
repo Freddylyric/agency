@@ -10,10 +10,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-import '../Utils/utils.dart';
+import '../../Utils/utils.dart';
 import 'package:agency_app/config.dart' as config;
 
-import 'home_screen.dart';
+import '../home_screen.dart';
+import '../navigation.dart';
 
 class OTPScreen extends StatefulWidget {
   const OTPScreen({Key? key}) : super(key: key);
@@ -120,11 +121,11 @@ class _OTPScreenState extends State<OTPScreen> {
           // User has authorized access and can proceed to the home screen
 
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+              context, MaterialPageRoute(builder: (context) =>  NavPage(profileInfo: profileInfo!, accessToken: accessToken!,)));
 
         } else if (authorized == null && has == 1) {
           // User is not authorized, but has the right to add IP
-          _addIPToWhitelist(ipAddress!);
+          _addIPToWhitelist(ipAddress!, accessToken!, profileInfo!);
           // Display a success message
         } else {
           // User is not authorized and does not have the right to add IP
@@ -152,7 +153,7 @@ class _OTPScreenState extends State<OTPScreen> {
 
 
 
-  Future<void> _addIPToWhitelist(String ipAddress, ) async {
+  Future<void> _addIPToWhitelist(String ipAddress, String accessToken, String profileInfo ) async {
     // API endpoint URL
     final String apiUrl = '${config.baseUrl}clients/v1/add/ip';
     final String storedToken = _storage.read(key: 'X-Token')!.toString();
@@ -163,13 +164,13 @@ class _OTPScreenState extends State<OTPScreen> {
       'X-App-Key': config.appKey,
       'X-Authorization-Key': config.authorizationKey,
       'X-Requested-With': 'XMLHttpRequest',
-      'X-Token': storedToken, // Retrieve the token from storage or wherever you stored it
       'Content-Type': 'application/json',
+      'X-Token-Key': accessToken,
     };
 
     // Request body
     Map<String, dynamic> requestBody = {
-      'client_whitelistIps': [storedIPAddress],
+      'client_whitelistIps': [ipAddress],
     };
 
     try {
@@ -188,7 +189,7 @@ class _OTPScreenState extends State<OTPScreen> {
         // IP address added successfully
         print('IP address added successfully');
 
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> HomeScreen()));
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> NavPage(profileInfo: profileInfo, accessToken: accessToken,)));
       } else {
         // Failed to add IP address
         String errorMessage = responseData['statusDescription'] ?? 'Unknown error';
@@ -243,7 +244,9 @@ class _OTPScreenState extends State<OTPScreen> {
                     keyboardType: TextInputType.text, // Set the keyboardType to accept alphanumeric input
                     onSubmit: (code) {
                       verCode = code;
+
                       print("OTP is $code");
+                      _verifyOTP(phoneNumber, countryCode, verCode);
                       // _verifyOTP(storedValue, countryCode, code);
                     },
                   ),
