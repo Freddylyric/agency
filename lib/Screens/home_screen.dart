@@ -12,6 +12,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:agency_app/config.dart' as config;
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart';
+
 
 import 'User authentication/login_screen.dart';
 import 'add_client_screen.dart';
@@ -386,6 +388,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
+  String formatCurrency(double amount) {
+    final NumberFormat currencyFormat = NumberFormat.currency(
+      symbol: '', //
+      decimalDigits: 2,
+    );
+    return currencyFormat.format(amount);
+  }
+
+
+
 
 
 
@@ -400,8 +412,12 @@ class _HomeScreenState extends State<HomeScreen> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               // While data is being fetched, show a CircularProgressIndicator
 
-              return Center(child: CircularProgressIndicator());
+              return Center(child: Padding(
+                padding: const EdgeInsets.all(40.0),
+                child: CircularProgressIndicator(),
+              ));
             } else if (snapshot.hasError) {
+              //performLogout();
               // If an error occurred during fetching
                 return Center(
 
@@ -496,7 +512,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             IconButton(
                               icon: Icon(
-                                _obscureBalance ? Icons.visibility_off : Icons.visibility,
+                                _obscureBalance ? Icons.visibility : Icons.visibility_off,
                                 color: Colors.grey,
                               ),
                               onPressed: () {
@@ -521,9 +537,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           SizedBox(
                             height: 10,
                           ),
-                          Text(
-                            '${currency ?? ''} ${double.tryParse(availableBalance ?? '0.0')?.toStringAsFixed(2) ?? '0.00'}',
-                            style: mainHeading,
+                          Visibility(
+                            visible: _obscureBalance,
+                            replacement: Text(
+                              '*******', // Show asterisks when obscured
+                              style: mainHeading,
+                            ),
+                            child:
+                            Text(
+                              '${currency ?? ''} ${formatCurrency(double.tryParse(availableBalance ?? '0.0') ?? 0.0)}',
+                              style: mainHeading,
+                            )
+
                           ),
 
                           SizedBox(
@@ -535,7 +560,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               style: bodyTextWhite,
                             ),
                             TextSpan(
-                              text: ' ${double.tryParse(commission ?? '0.0')?.toStringAsFixed(2) ?? '0.00'}',
+                              text: ' ${formatCurrency(double.tryParse(commission ?? '0.0')?? 0.00)}',
                               style: bodyTextWhite,
                             )
                           ]))
@@ -551,7 +576,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Expanded(child: GestureDetector(
                               onTap: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => SendMoneyScreen()));
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => SendMoneyScreen(profileInfo: widget.profileInfo, accessToken: widget.accessToken,)));
                               },
                               child: HomeTile(tileName: "Send Money", iconTile: Icons.send_outlined))),
                           Expanded(child: GestureDetector(
@@ -702,7 +727,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               title: Text(transaction['beneficiaryName'], style: bodyTextBlackBigger,),
                               subtitle: Text(transaction['created_at'], style: bodyTextBlack,),
-                              trailing: Text('${transaction['currencyReceive']} ${transaction['amount']}' , style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700,),),
+                              trailing: Text(
+                                '${transaction['currencyReceive']} ${formatCurrency(double.tryParse(transaction['amount']) ?? 0.0)}',
+                                style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700),
+                              ),
+
                             );
                           }),
                     )
@@ -750,6 +779,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Wait for all data to be fetched before returning
     await Future.wait(futures);
+  }
+
+  Future<void> performLogout() async {
+
+    await _storage.deleteAll();
+
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
   }
 
 // ... rest of your existing code ...

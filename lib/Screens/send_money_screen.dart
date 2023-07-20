@@ -5,6 +5,10 @@ import 'package:agency_app/Utils/utils.dart';
 import 'package:flutter/material.dart';
 
 class SendMoneyScreen extends StatefulWidget {
+  final profileInfo;
+  final accessToken;
+  const SendMoneyScreen({Key? key,required this.profileInfo,required this.accessToken}) : super(key: key);
+
   @override
   _SendMoneyScreenState createState() => _SendMoneyScreenState();
 }
@@ -33,7 +37,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>NavPage(profileInfo: null, accessToken: null,)));
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>NavPage(profileInfo: widget.profileInfo, accessToken: widget.accessToken,)));
         }, icon: Icon(Icons.arrow_back_ios, color: Colors.black,)),//IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back_ios)),
         backgroundColor: Colors.white,
         title: Text('Send Money', style: bodyTextBlackBigger,),

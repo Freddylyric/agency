@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:agency_app/Utils/utils.dart';
+import 'package:intl/intl.dart';
 
 class PendingTransactionsScreen extends StatelessWidget {
   final List<dynamic> pendingTransactions;
@@ -11,7 +12,12 @@ class PendingTransactionsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Pending Transactions'),
+        leading: IconButton(onPressed: () {
+          Navigator.pop(context);
+        }, icon: Icon(Icons.arrow_back_ios, color: Colors.white,)),//IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back_ios)),
+        backgroundColor:  Color(0xFF00284A),
+        title: Text('Pending Approvals', style: whiteText,),
+        centerTitle: true,
       ),
       body: ListView.builder(
         itemCount: pendingTransactions.length,
@@ -54,10 +60,25 @@ class PendingTransactionsScreen extends StatelessWidget {
             ),
             title: Text(transaction['beneficiaryName'], style: bodyTextBlackBigger,),
             subtitle: Text(transaction['created_at'], style: bodyTextBlack,),
-            trailing: Text('${transaction['currencyReceive']}${transaction['amount']} ', style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700,),),
+            trailing: Text(
+              '${transaction['currencyReceive']} ${formatCurrency(double.tryParse(transaction['amount']) ?? 0.0)}',
+              style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700),
+            ),
+
           );
         },
       ),
     );
+  }
+
+
+
+
+  String formatCurrency(double amount) {
+    final NumberFormat currencyFormat = NumberFormat.currency(
+      symbol: '', //
+      decimalDigits: 2,
+    );
+    return currencyFormat.format(amount);
   }
 }

@@ -38,7 +38,7 @@ class _NavPageState extends State<NavPage> {
     super.initState();
     screens = [
       HomeScreen(profileInfo: widget.profileInfo, accessToken: widget.accessToken),
-      SendMoneyScreen(),
+      SendMoneyScreen(profileInfo: widget.profileInfo, accessToken: widget.accessToken,),
       ProfileScreen(),
     ];
   }
@@ -71,9 +71,9 @@ class _NavPageState extends State<NavPage> {
 
             onTap: (index) => setState(()=>  currentIndex = index),
             items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.square), label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(Icons.square), label: 'Transactions'),
-              BottomNavigationBarItem(icon: Icon(Icons.square), label: 'Account'),
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Transactions'),
+              BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Account'),
                ],
           )
       ),
