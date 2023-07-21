@@ -43,13 +43,20 @@ final bodyTextBlack = GoogleFonts.inter(
   letterSpacing: 1,
   color: Color(0xff9D9D9D),
 );
+final bodyTextBlacker = GoogleFonts.inter(
+  fontSize: 12,
+  fontWeight: FontWeight.w400,
+  height: 15 / 12,
+  letterSpacing: 1,
+  color: Colors.black,
+);
 
 final bodyTextBlackBigger = GoogleFonts.inter(
   fontSize: 15,
   fontWeight: FontWeight.w400,
   height: 15 / 12,
   letterSpacing: 1,
-  color: Color(0xff333333),
+  color: Colors.black,
 );
 
 final blueText = GoogleFonts.inter(

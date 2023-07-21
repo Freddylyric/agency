@@ -765,6 +765,7 @@ class _HomeScreenState extends State<HomeScreen> {
       print('Successful Transactions: $successfulTransactions');
       print('Pending Transactions: $pendingTransactions');
     } catch (error) {
+      performLogout();
       // Handle errors here
     }
 
