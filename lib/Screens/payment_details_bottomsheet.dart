@@ -9,6 +9,9 @@ class PaymentDetailsBottomSheet extends StatelessWidget {
   final String userName;
   final String deliveryMode;
   final String accountNumber;
+  final String senderCurrency;
+  final String beneficiaryCurrency;
+
 
   const PaymentDetailsBottomSheet({
     required this.amount,
@@ -17,6 +20,8 @@ class PaymentDetailsBottomSheet extends StatelessWidget {
     required this.userName,
     required this.deliveryMode,
     required this.accountNumber,
+    required this.senderCurrency,
+    required this.beneficiaryCurrency,
   });
 
   @override
@@ -70,7 +75,7 @@ class PaymentDetailsBottomSheet extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'You Send (USD)',
+                    'You Send',
                     style: GoogleFonts.inter(fontSize: 11.0, fontWeight: FontWeight.w400,),
                   ),
                   SizedBox(height: 5,),
@@ -80,7 +85,7 @@ class PaymentDetailsBottomSheet extends StatelessWidget {
                     style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700,),
                   ),
                   Text(
-                    'USD',
+                    senderCurrency,
                     style: GoogleFonts.inter(fontSize: 11.0, fontWeight: FontWeight.w400,),
                   ),
 
@@ -104,7 +109,7 @@ class PaymentDetailsBottomSheet extends StatelessWidget {
                     style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700,),
                   ),
                   Text(
-                    'KES',
+                    beneficiaryCurrency,
                     style: GoogleFonts.inter(fontSize: 11.0, fontWeight: FontWeight.w400,),
                   ),
                 ],
