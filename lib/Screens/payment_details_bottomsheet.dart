@@ -1,28 +1,97 @@
 import 'package:agency_app/Utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:agency_app/config.dart' as config;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class PaymentDetailsBottomSheet extends StatelessWidget {
-  final String amount;
-  final String youSend;
-  final String theyReceive;
-  final String userName;
-  final String deliveryMode;
+import '../models/transaction_model.dart';
+
+class PaymentDetailsBottomSheet extends StatefulWidget {
+
   final String accountNumber;
-  final String senderCurrency;
-  final String beneficiaryCurrency;
+
+
+  final String accessToken;
+
+  final Transaction? transaction;
+
 
 
   const PaymentDetailsBottomSheet({
-    required this.amount,
-    required this.youSend,
-    required this.theyReceive,
-    required this.userName,
-    required this.deliveryMode,
+
+
     required this.accountNumber,
-    required this.senderCurrency,
-    required this.beneficiaryCurrency,
+    required this.accessToken,
+    required this.transaction,
+
   });
+
+  @override
+  State<PaymentDetailsBottomSheet> createState() => _PaymentDetailsBottomSheetState();
+}
+
+class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
+
+
+
+  Future<void> _makePayment() async {
+
+
+    // API endpoint URL
+    final String apiUrl = config.paymentAPI;
+
+    // Request headers
+    Map<String, String> headers = {
+      'X-App-Key': config.appKey,
+      'X-Authorization-Key': config.authorizationKey,
+      'X-Requested-With': config.requestedWith,
+      'Content-Type': config.contentType,
+      'X-Token-Key': widget.accessToken,
+    };
+    //the body
+    Map<String, dynamic> paymentBody = {
+      "transactionTypeId": 2,
+      "senderProfile_id": widget.transaction!.senderProfileId,
+      "receiverProfile_id": widget.transaction!.beneficiaryProfileId,
+      "amount": widget.transaction!.amount,
+      "senderCountry_id": widget.transaction!.senderCountryId,
+      "receiverCountry_id": widget.transaction!.beneficiaryCountryId,
+      "paymentDescription": "test",
+    };
+
+    try {
+      // Send the API request
+      http.Response response = await http.post(
+        Uri.parse(apiUrl),
+        headers: headers,
+        body: jsonEncode(paymentBody),
+
+      );
+
+      // Parse the response JSON
+      Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      // Check the response status
+      if (response.statusCode == 200 && responseData['code'] == 'Success') {
+        // show a snackbar to confirm a successful payment
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment Successful'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+      } else {
+        // Failed payment
+        String errorMessage = responseData['statusDescription'] ?? 'Unknown error';
+        print('Payment Failed: $errorMessage');
+      }
+    } catch (error) {
+      print('Error occurred while calling the 3API: $error');
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +129,7 @@ class PaymentDetailsBottomSheet extends StatelessWidget {
                   style: GoogleFonts.inter(fontSize: 11.0, fontWeight: FontWeight.w400,),
                 ),
                 Text(
-                  amount,
+                  widget.transaction!.amount.toString(),
                   style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700,),
                 ),
               ],
@@ -81,11 +150,11 @@ class PaymentDetailsBottomSheet extends StatelessWidget {
                   SizedBox(height: 5,),
 
                   Text(
-                    youSend,
+                    widget.transaction!.youSend.toString(),
                     style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700,),
                   ),
                   Text(
-                    senderCurrency,
+                    widget.transaction!.senderCurrency,
                     style: GoogleFonts.inter(fontSize: 11.0, fontWeight: FontWeight.w400,),
                   ),
 
@@ -105,11 +174,11 @@ class PaymentDetailsBottomSheet extends StatelessWidget {
                   ),
                   SizedBox(height: 5,),
                   Text(
-                    theyReceive,
+                    widget.transaction!.theyReceive.toString(),
                     style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700,),
                   ),
                   Text(
-                    beneficiaryCurrency,
+                    widget.transaction!.beneficiaryCurrency,
                     style: GoogleFonts.inter(fontSize: 11.0, fontWeight: FontWeight.w400,),
                   ),
                 ],
@@ -117,15 +186,16 @@ class PaymentDetailsBottomSheet extends StatelessWidget {
             ],
           ),
           SizedBox(height: 32.0),
-          buildRow(Icons.person,'Name', userName),
+          buildRow(Icons.person,'Name', widget.transaction!.beneficiaryName),
           SizedBox(height: 10,),
-          buildRow(Icons.send_outlined,'Delivery Mode', deliveryMode),
+          buildRow(Icons.send_outlined,'Delivery Mode', widget.transaction!.deliveryMode),
           SizedBox(height: 10,),
-          buildRow(Icons.warehouse_outlined,'Account Number', accountNumber),
+          buildRow(Icons.warehouse_outlined,'Account Number', widget.accountNumber),
           SizedBox(height: 32.0),
           ElevatedButton(
             onPressed: () {
               // Perform confirmation action
+              _makePayment();
               Navigator.pop(context); // Close the bottom sheet
             },
             child: Text('Confirm', style: whiteText,),

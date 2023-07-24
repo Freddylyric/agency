@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:searchfield/searchfield.dart';
 
 import '../models/countries_model.dart';
+import '../models/transaction_model.dart';
 import '../models/user_model.dart';
 import 'add_client_screen.dart';
 import 'package:http/http.dart' as http;
@@ -25,12 +26,19 @@ class SendMoneyScreen extends StatefulWidget {
 }
 
 class _SendMoneyScreenState extends State<SendMoneyScreen> {
+
+  Transaction? transaction;
+
   String selectedCountry = 'Kenya';
   String selectedBank = 'Kenya Commercial Bank';
   String selectedSendToOption = '';
   String defaultSenderCurrency = 'USD';
   String defaultBeneficiaryCurrency = 'USD';
   late double totalAmount = 0;
+  late double amountToSend = 0;
+  late double theyReceiveAmount = 0;
+
+  final _formKey = GlobalKey<FormState>();
 
 
 
@@ -54,8 +62,12 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
   List<Country> countries = [];
   List<Country> baseCurrencies = [];
 
-  String selectedSender = '';
-  String selectedBeneficiary = '';
+  late String selectedSender= '';
+  late String selectedBeneficiary = '';
+  late String? senderName;
+ late  String? senderPhoneNumber;
+  late String? beneficiaryName;
+  late String? beneficiaryPhoneNumber;
   late String selectedSenderCountryId = '';
   late String selectedBeneficiaryCountryId = '';
   late String selectedSenderCurrency ;
@@ -244,6 +256,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 16.0),
         child: Form(
+          key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -298,7 +311,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
 
               SearchField(
                 suggestions: users
-                    .map((user) => SearchFieldListItem('${user.firstName} ${user.lastName}:    ${user.msisdn}'))
+                    .map((user) => SearchFieldListItem<User>('${user.firstName} ${user.middleName} ${user.lastName}:    ${user.msisdn}', item: user))
                     .toList(),
                 suggestionState: Suggestion.expand,
                 textInputAction: TextInputAction.next,
@@ -307,13 +320,12 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                   fontSize: 14,
                   color: Colors.black.withOpacity(0.8),
                 ),
-                validator: (x) {
-                  if (!users.any((user) => '${user.firstName} ${user.lastName}' == x) ||
-                      x!.isEmpty) {
-                    return 'Please enter a valid User';
-                  }
-                  return null;
-                },
+                // validator: (x) {
+                //   if (!users.any((user) => user == x)) {
+                //     return 'Please enter a valid user';
+                //   }
+                //   return null;
+                // },
                 searchInputDecoration: InputDecoration(
                   suffixIcon: IconButton(
                     onPressed: () {
@@ -373,18 +385,26 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                 maxSuggestionsInViewPort: 6,
                 itemHeight: 40,
 
-                // onSuggestionTap: (x) {
-                //   setState(() {
-                //     selectedSender = x.toString();
-                //     print(selectedSender);
-                //   });
-                // },
-                // onSuggestionTap: (SearchFieldListItem){
-                //   setState(() {
-                //     selectedSender = SearchFieldListItem.toString();
-                //   })
-                // },
+                onSuggestionTap: (SearchFieldListItem<User> x) {
+                  selectedSender =  x.item!.profileId;
 
+                  // Find the user in the list based on the selectedSender profile_id
+                  User? senderUser = users.firstWhere((user) => user.profileId == selectedSender);
+
+                  // Set the sender's name and phone number if the user is found
+                  if (senderUser != null) {
+                    senderName = '${senderUser.firstName} ${senderUser.middleName} ${senderUser.lastName}';
+                    senderPhoneNumber = senderUser.msisdn;
+                  } else {
+                    senderName = null;
+                    senderPhoneNumber = null;
+                  }
+
+
+                  print(selectedSender);
+                  print(senderName);
+                  print(senderPhoneNumber);
+                },
 
               ),
               SizedBox(height: 10,),
@@ -392,7 +412,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
 
               SearchField(
                 suggestions: users
-                    .map((user) => SearchFieldListItem('${user.firstName} ${user.lastName}: ${user.msisdn}'))
+                    .map((user) => SearchFieldListItem<User>('${user.firstName} ${user.middleName} ${user.lastName}: ${user.msisdn}', item: user))
                     .toList(),
                 suggestionState: Suggestion.expand,
                 textInputAction: TextInputAction.next,
@@ -401,13 +421,13 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                   fontSize: 14,
                   color: Colors.black.withOpacity(0.8),
                 ),
-                validator: (x) {
-                  if (!users.any((user) => '${user.firstName} ${user.lastName}' == x) ||
-                      x!.isEmpty) {
-                    return 'Please enter a valid User';
-                  }
-                  return null;
-                },
+                // validator: (x) {
+                //   if (!users.any((user) => '${user.firstName} ${user.middleName}  ${user.lastName}' == x) ||
+                //       x!.isEmpty) {
+                //     return 'Please enter a valid User';
+                //   }
+                //   return null;
+                // },
                 searchInputDecoration: InputDecoration(
                   suffixIcon: IconButton(
                     onPressed: () {
@@ -469,11 +489,25 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                 // onSearchTextChanged: (x) {
                 //   fetchUsersList(x);
                 // },
-                onSuggestionTap: (x) {
-                  setState(() {
-                    selectedBeneficiary = x.toString();
-                    print(selectedBeneficiary);
-                  });
+                onSuggestionTap: (SearchFieldListItem<User> x) {
+                  selectedBeneficiary =  x.item!.profileId.toString();
+
+                  // Find the user in the list based on the selectedBeneficiary profile_id
+                  User? beneficiaryUser = users.firstWhere((user) => user.profileId == selectedBeneficiary);
+
+                  // Set the sender's name and phone number if the user is found
+                  if (beneficiaryUser != null) {
+                    beneficiaryName = '${beneficiaryUser.firstName} ${beneficiaryUser.middleName} ${beneficiaryUser.lastName}';
+                    beneficiaryPhoneNumber = beneficiaryUser.msisdn;
+                  } else {
+                    beneficiaryName = null;
+                    beneficiaryPhoneNumber = null;
+                  }
+
+
+                  print(selectedBeneficiary);
+                  print(beneficiaryName);
+                  print(beneficiaryPhoneNumber);
                 },
               ),
 
@@ -535,12 +569,12 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
 
                   // Calculate the "They Receive" amount based on the conversion rate
                   double conversionRate = await fetchConversionRate(
-                    selectedSenderCountryId, // Replace with the ID of the base currency country
-                    selectedBeneficiaryCountryId, // Replace with the ID of the beneficiary currency country
+                    selectedSenderCountryId,
+                    selectedBeneficiaryCountryId,
                   );
-                  double transactionFee = 2.5; // Replace this with the actual transaction fee from API
-                  double amountToSend = double.tryParse(value) ?? 0.0;
-                  double theyReceiveAmount = amountToSend * conversionRate;
+                  double transactionFee = 2.5; //
+                   amountToSend = double.tryParse(value) ?? 0.0;
+                   theyReceiveAmount = amountToSend * conversionRate;
                    totalAmount = amountToSend + transactionFee;
                   _theyReceiveController.text = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(theyReceiveAmount);
                   _conversionRateController.text = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(conversionRate);
@@ -750,21 +784,41 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
               SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return PaymentDetailsBottomSheet(
-                        amount: totalAmount.toString(),
-                        youSend: _amountController.text.toString(),
-                        theyReceive: _theyReceiveController.text.toString(),
-                        userName: selectedBeneficiary,
-                        deliveryMode: 'Bank Account',
-                        accountNumber: '1234567890',
-                        senderCurrency: selectedSenderCurrency,
-                        beneficiaryCurrency: selectedBeneficiaryCurrency,
-                      );
-                    },
-                  );
+                  if (_formKey.currentState!.validate()) {
+
+                    transaction = Transaction(
+                      senderProfileId: selectedSender,
+                      senderName: senderName?? '', // Replace with the actual sender name
+                      senderPhoneNumber: senderPhoneNumber?? '', // Replace with the actual sender phone number
+                      beneficiaryProfileId: selectedBeneficiary,
+                      beneficiaryName: beneficiaryName?? '', // Replace with the actual beneficiary name
+                      beneficiaryPhoneNumber: beneficiaryPhoneNumber?? '', // Replace with the actual beneficiary phone number
+                      amount: totalAmount,
+                      senderCountryId: selectedSenderCountryId,
+                      beneficiaryCountryId: selectedBeneficiaryCountryId,
+                      deliveryMode: selectedSendToOption,
+                      youSend: amountToSend,
+                      theyReceive: theyReceiveAmount,
+                      senderCurrency: selectedSenderCurrency,
+                      beneficiaryCurrency: selectedSenderCurrency,
+                    );
+
+
+
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return PaymentDetailsBottomSheet(accountNumber: '12345678', accessToken: widget.accessToken, transaction: transaction,
+
+                        );
+                      },
+                    );
+
+
+                  }
+
+                  // instance of the Transaction class and its properties
+
                 },
                 child: Text('Send Money', style: whiteText,),
                 style: ButtonStyleConstants.primaryButtonStyle,
