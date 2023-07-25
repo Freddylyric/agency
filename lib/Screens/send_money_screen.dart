@@ -37,6 +37,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
   late double totalAmount = 0;
   late double amountToSend = 0;
   late double theyReceiveAmount = 0;
+  double transactionFee = 2.5;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -65,7 +66,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
   late String selectedSender= '';
   late String selectedBeneficiary = '';
   late String? senderName;
- late  String? senderPhoneNumber;
+  late  String? senderPhoneNumber;
   late String? beneficiaryName;
   late String? beneficiaryPhoneNumber;
   late String selectedSenderCountryId = '';
@@ -546,13 +547,37 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                   labelText: 'You send', labelStyle: bodyTextBlackBigger,
                   suffixIcon: DropdownButton<String>(
                     value: selectedSenderCurrency,
-                    onChanged: (value) {
+                    onChanged: (value) async {
                       setState(() {
                         selectedSenderCurrency = value!;
                         Country selectedCountry = baseCurrencies.firstWhere((country) => country.currency == value);
                         selectedSenderCountryId = selectedCountry.countryId;
 
                       });
+
+                      Country selectedBeneficiaryCountry = countries.firstWhere((country) => country.currency == selectedBeneficiaryCurrency);
+                      selectedBeneficiaryCountryId = selectedBeneficiaryCountry.countryId;
+
+                      double conversionRate = await fetchConversionRate(
+                        selectedSenderCountryId,
+                        selectedBeneficiaryCountryId,
+                      );
+
+                      amountToSend = double.tryParse(_amountController.text) ?? 0.0;
+                      theyReceiveAmount = amountToSend * conversionRate;
+                      totalAmount = amountToSend + transactionFee;
+
+                      // Update the text in the controllers to reflect the new values
+                      _theyReceiveController.text = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(theyReceiveAmount);
+
+                     setState(() {
+                       _conversionRateController.text = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(conversionRate);
+                       _transactionFeeController.text = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(transactionFee);
+
+                     });
+
+
+
                     },
                     items: buildBaseCurrencyDropdownItems(),
                   ),
@@ -572,13 +597,19 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                     selectedSenderCountryId,
                     selectedBeneficiaryCountryId,
                   );
-                  double transactionFee = 2.5; //
-                   amountToSend = double.tryParse(value) ?? 0.0;
-                   theyReceiveAmount = amountToSend * conversionRate;
-                   totalAmount = amountToSend + transactionFee;
+                  // double transactionFee = 2.5; //
+                  amountToSend = double.tryParse(value) ?? 0.0;
+                  theyReceiveAmount = amountToSend * conversionRate;
+                  totalAmount = amountToSend + transactionFee;
+
                   _theyReceiveController.text = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(theyReceiveAmount);
-                  _conversionRateController.text = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(conversionRate);
-                  _transactionFeeController.text = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(transactionFee);
+
+                 setState(() {
+                   _conversionRateController.text = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(conversionRate);
+                   _transactionFeeController.text = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(transactionFee);
+
+                 });
+
                 },
               ),
 
@@ -596,13 +627,33 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                   DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: selectedBeneficiaryCurrency,
-                      onChanged: (value) {
+                      onChanged: (value) async {
                         setState(() {
                           selectedBeneficiaryCurrency = value!;
                           Country selectedCountry = countries.firstWhere((country) => country.currency == value);
                           selectedBeneficiaryCountryId = selectedCountry.countryId;
 
                         });
+
+                        double conversionRate = await fetchConversionRate(
+                          selectedSenderCountryId,
+                          selectedBeneficiaryCountryId,
+                        );
+
+
+                        amountToSend = double.tryParse(_amountController.text) ?? 0.0;
+                        theyReceiveAmount = amountToSend * conversionRate;
+                        totalAmount = amountToSend + transactionFee;
+
+// Update the text in the controllers to reflect the new values
+                        _theyReceiveController.text = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(theyReceiveAmount);
+
+                       setState(() {
+                         _conversionRateController.text = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(conversionRate);
+                         _transactionFeeController.text = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(transactionFee);
+
+                       });
+
                       },
                       items: buildCurrencyDropdownItems(),
                     ),
@@ -871,7 +922,3 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
 
 
 }
-
-
-
-

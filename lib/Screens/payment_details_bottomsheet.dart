@@ -1,8 +1,11 @@
+import 'dart:ui';
+
 import 'package:agency_app/Utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:agency_app/config.dart' as config;
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'dart:convert';
 
 import '../models/transaction_model.dart';
@@ -128,8 +131,9 @@ class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
                   'From Wallet',
                   style: GoogleFonts.inter(fontSize: 11.0, fontWeight: FontWeight.w400,),
                 ),
+                SizedBox(height: 5,),
                 Text(
-                  widget.transaction!.amount.toString(),
+                  NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(widget.transaction!.amount),
                   style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700,),
                 ),
               ],
@@ -150,7 +154,7 @@ class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
                   SizedBox(height: 5,),
 
                   Text(
-                    widget.transaction!.youSend.toString(),
+                    NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(widget.transaction!.youSend),
                     style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700,),
                   ),
                   Text(
@@ -173,8 +177,7 @@ class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
                     style: GoogleFonts.inter(fontSize: 11.0, fontWeight: FontWeight.w400,),
                   ),
                   SizedBox(height: 5,),
-                  Text(
-                    widget.transaction!.theyReceive.toString(),
+                  Text(NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(widget.transaction!.theyReceive),
                     style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700,),
                   ),
                   Text(
@@ -186,7 +189,7 @@ class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
             ],
           ),
           SizedBox(height: 32.0),
-          buildRow(Icons.person,'Name', widget.transaction!.beneficiaryName),
+          buildRow(Icons.person,'Name', widget.transaction!.beneficiaryName,),
           SizedBox(height: 10,),
           buildRow(Icons.send_outlined,'Delivery Mode', widget.transaction!.deliveryMode),
           SizedBox(height: 10,),
@@ -216,13 +219,13 @@ class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
             SizedBox(width: 10,),
             Text(
               label,
-              style: GoogleFonts.inter(fontSize: 15.0, fontWeight: FontWeight.w400,),
+              style: GoogleFonts.inter(fontSize: 14.0, fontWeight: FontWeight.w400,),
             ),
           ],
         ),
         Text(
           value,
-          style: GoogleFonts.inter(fontSize: 15.0, fontWeight: FontWeight.w400,),
+          style: GoogleFonts.inter(fontSize: 14.0, fontWeight: FontWeight.w400,),
         ),
       ],
     );
