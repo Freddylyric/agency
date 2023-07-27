@@ -33,6 +33,7 @@ class _OTPScreenState extends State<OTPScreen> {
 
 
   final _storage = const FlutterSecureStorage();
+  TextEditingController _otpController = TextEditingController();
   late String phoneNumber = '';
   late String storedValue;
   final countryCode = 'KEN';
@@ -225,6 +226,7 @@ class _OTPScreenState extends State<OTPScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
+
                 mainAxisAlignment: MainAxisAlignment.center,
 
 
@@ -235,27 +237,71 @@ class _OTPScreenState extends State<OTPScreen> {
                   Text("Enter the OTP verification code sent", textAlign: TextAlign.center, style: subHeading,),
                   SizedBox(height: 20,),
 
-                  OtpTextField(
-                    numberOfFields: 6,
-                    fillColor: Colors.white.withOpacity(0.1),
-                    showFieldAsBox: true,
-                    filled: true,
-                    textStyle: GoogleFonts.poppins(color: Colors.white, fontSize: 16.0),
-                    keyboardType: TextInputType.text, // Set the keyboardType to accept alphanumeric input
-                    onSubmit: (code) {
-                      verCode = code;
+                  TextFormField(
+                    controller: _otpController,
+                    keyboardType: TextInputType.visiblePassword,
+                    style: GoogleFonts.inter( fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+                    decoration:  InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Colors.white, width: 2),
+                      ),
+                      labelText: 'OTP',
+                      labelStyle: GoogleFonts.inter( fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white),
+                    ),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter your OTP';
+                      }
 
-                      print("OTP is $code");
-                      _verifyOTP(phoneNumber, countryCode, verCode);
-                      // _verifyOTP(storedValue, countryCode, code);
+                      // additional validation logic for the phone number
+                      return null;
                     },
+                    onEditingComplete:
+                    () async {
+                      if (_otpController.text.length == 6) {
+                        await _verifyOTP(phoneNumber, countryCode, _otpController.text);
+                      }
+                    },
+                    onFieldSubmitted:
+                    (value) {
+                      verCode = value;
+                      verCode = _otpController.text;
+                      print("OTP is $verCode");
+
+                      _verifyOTP(phoneNumber, countryCode, value);
+                    },
+
+
                   ),
+
+
+
+                  // OtpTextField(
+                  //   numberOfFields: 6,
+                  //   fillColor: Colors.white.withOpacity(0.1),
+                  //   showFieldAsBox: true,
+                  //   filled: true,
+                  //   textStyle: GoogleFonts.poppins(color: Colors.white, fontSize: 16.0),
+                  //   keyboardType: TextInputType.text, // Set the keyboardType to accept alphanumeric input
+                  //   onSubmit: (code) {
+                  //     verCode = code;
+                  //
+                  //     print("OTP is $code");
+                  //     _verifyOTP(phoneNumber, countryCode, verCode);
+                  //     // _verifyOTP(storedValue, countryCode, code);
+                  //   },
+                  // ),
 
 
                   SizedBox(height: 30,),
                   SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(onPressed: (){
+                        verCode = _otpController.text;
 
                         _verifyOTP(phoneNumber, countryCode, verCode);
                       }, child: Text("NEXT", style: whiteText),

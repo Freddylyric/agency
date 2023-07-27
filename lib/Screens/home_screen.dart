@@ -453,7 +453,8 @@ class _HomeScreenState extends State<HomeScreen> {
               return Column(
                 children: [
                   Container(
-                      height: size.height * 0.35,
+                      //height: size.height * 0.35,
+                      height: 270,
                       width: double.infinity,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -569,7 +570,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   Column(children: [
                     Container(
-                      height: size.height * 0.13,
+                      height: 100,
                       width: size.width * 1,
                       child: Row(
                         // mainAxisAlignment: MainAxisAlignment.center,
@@ -603,10 +604,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     GestureDetector(
                       onTap: () {
                         //TODO: navigate to the APprovals
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PendingTransactionsScreen(pendingTransactions: pendingTransactions),
+                          ),
+                        );
                       },
                       child: Container(
                           padding: EdgeInsets.symmetric(horizontal: 10),
-                          height: size.height * 0.06,
+                          height: 50,
                           width: size.width * 1,
                           child: GestureDetector(
                             onTap: () {
@@ -671,7 +679,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Text("Transactions", style: bodyTextBlackBigger,textAlign: TextAlign.start,)),
                     if (successfulTransactions.isEmpty)
                       Container(
-                        height: size.height * 0.7,
+                        height: 500,
                         width: size.width * 1,
                         child: Center(
                           child: Text('No successful transactions found.'),
@@ -687,6 +695,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
                       child: ListView.builder(
+
                           padding: EdgeInsets.zero,
                           itemCount: successfulTransactions.length,
                           itemBuilder: (context, index) {

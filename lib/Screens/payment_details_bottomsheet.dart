@@ -39,6 +39,12 @@ class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
 
 
   Future<void> _makePayment() async {
+    print(widget.transaction!.senderProfileId);
+    print(widget.transaction!.beneficiaryProfileId);
+    print(widget.transaction!.amount);
+    print(widget.transaction!.senderCountryId);
+    print(widget.transaction!.beneficiaryCountryId);
+    print(widget.accessToken);
 
 
     // API endpoint URL
@@ -55,11 +61,11 @@ class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
     //the body
     Map<String, dynamic> paymentBody = {
       "transactionTypeId": 2,
-      "senderProfile_id": widget.transaction!.senderProfileId,
-      "receiverProfile_id": widget.transaction!.beneficiaryProfileId,
+      "senderProfile_id": double.tryParse(widget.transaction!.senderProfileId),
+      "receiverProfile_id": double.tryParse(widget.transaction!.beneficiaryProfileId),
       "amount": widget.transaction!.amount,
-      "senderCountry_id": widget.transaction!.senderCountryId,
-      "receiverCountry_id": widget.transaction!.beneficiaryCountryId,
+      "senderCountry_id": double.tryParse(widget.transaction!.senderCountryId),
+      "receiverCountry_id": double.tryParse(widget.transaction!.beneficiaryCountryId),
       "paymentDescription": "test",
     };
 
@@ -80,18 +86,38 @@ class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
         // show a snackbar to confirm a successful payment
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Payment Successful'),
+            content: Text('Payment initiated has queued for processing'),
             backgroundColor: Colors.green,
           ),
         );
+        Navigator.pop(context);
 
       } else {
         // Failed payment
+
         String errorMessage = responseData['statusDescription'] ?? 'Unknown error';
         print('Payment Failed: $errorMessage');
+        // show a snackbar with the error details
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment Failed: $errorMessage'),
+            backgroundColor: Colors.red,
+
+
+          )
+        );
+        Navigator.pop(context);
       }
     } catch (error) {
       print('Error occurred while calling the 3API: $error');
+      // show a snackbar with the error details
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error occurred while making the payment: $error'),
+          backgroundColor: Colors.red,
+        )
+      );
+      Navigator.pop(context);
     }
 
   }
@@ -199,7 +225,7 @@ class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
             onPressed: () {
               // Perform confirmation action
               _makePayment();
-              Navigator.pop(context); // Close the bottom sheet
+             // Navigator.pop(context); // Close the bottom sheet
             },
             child: Text('Confirm', style: whiteText,),
             style: ButtonStyleConstants.primaryButtonStyle,

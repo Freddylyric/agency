@@ -128,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: size.height * 0.3),
+                SizedBox(height: 200),
                 Text(
                   "Login",
                   style: GoogleFonts.inter(
@@ -173,7 +173,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       style: TextStyle(color: Colors.white),
                       obscureText: _obscurePin,
-                      onEditingComplete: _handleLogin
+                      onEditingComplete: _handleLogin,
+
                   ),
                   SizedBox(height: 16.0),
                   Align(
