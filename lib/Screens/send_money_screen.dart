@@ -525,6 +525,11 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                 // onSearchTextChanged: (x) {
                 //   fetchUsersList(x);
                 // },
+
+
+
+
+
                 onSuggestionTap: (SearchFieldListItem<User> x) {
                   selectedBeneficiary = x.item!.profileId.toString();
 
