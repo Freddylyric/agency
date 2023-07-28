@@ -43,16 +43,16 @@ class PendingTransactionsScreen extends StatelessWidget {
                       height: 20,
                       width: 20,
                       decoration: BoxDecoration(
-                        color: Colors.green,
+                        color: Colors.orange,
                         shape: BoxShape.circle,
                       ),
-                      child: Center(
-                        child: Icon(
-                          Icons.check,
-                          color: Colors.white,
-                          size: 15,
-                        ),
-                      ),
+                      // child: Center(
+                      //   child: Icon(
+                      //     Icons.check,
+                      //     color: Colors.white,
+                      //     size: 15,
+                      //   ),
+                      // ),
                     ),
                   ),
 

@@ -12,7 +12,7 @@ import '../models/transaction_model.dart';
 
 class PaymentDetailsBottomSheet extends StatefulWidget {
 
-  final String accountNumber;
+
 
 
   final String accessToken;
@@ -24,7 +24,7 @@ class PaymentDetailsBottomSheet extends StatefulWidget {
   const PaymentDetailsBottomSheet({
 
 
-    required this.accountNumber,
+
     required this.accessToken,
     required this.transaction,
 
@@ -35,6 +35,185 @@ class PaymentDetailsBottomSheet extends StatefulWidget {
 }
 
 class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
+
+
+
+  Future<void> _makeBankPayment() async {
+    print(widget.transaction!.senderProfileId);
+    print(widget.transaction!.beneficiaryProfileId);
+    print(widget.transaction!.amount);
+    print(widget.transaction!.senderCountryId);
+    print(widget.transaction!.beneficiaryCountryId);
+    print(widget.accessToken);
+
+
+    // API endpoint URL
+    final String apiUrl = config.paymentAPI;
+
+    // Request headers
+    Map<String, String> headers = {
+      'X-App-Key': config.appKey,
+      'X-Authorization-Key': config.authorizationKey,
+      'X-Requested-With': config.requestedWith,
+      'Content-Type': config.contentType,
+      'X-Token-Key': widget.accessToken,
+    };
+    //the body
+    Map<String, dynamic> paymentBody = {
+      "transactionTypeId": 2,
+      "senderProfile_id": double.tryParse(widget.transaction!.senderProfileId),
+      "receiverProfile_id": double.tryParse(widget.transaction!.beneficiaryProfileId),
+      "amount": widget.transaction!.amount,
+      "senderCountry_id": double.tryParse(widget.transaction!.senderCountryId),
+      "receiverCountry_id": double.tryParse(widget.transaction!.beneficiaryCountryId),
+      "bankId":widget.transaction!.bankId,
+      "account":widget.transaction!.bankAccount,
+      "address":widget.transaction!.address,
+      "paymentDescription": "test",
+    };
+
+    try {
+      // Send the API request
+      http.Response response = await http.post(
+        Uri.parse(apiUrl),
+        headers: headers,
+        body: jsonEncode(paymentBody),
+
+      );
+
+      // Parse the response JSON
+      Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      // Check the response status
+      if (response.statusCode == 200 && responseData['code'] == 'Success') {
+        // show a snackbar to confirm a successful payment
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment initiated has queued for processing'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+
+      } else {
+        // Failed payment
+
+        String errorMessage = responseData['statusDescription'] ?? 'Unknown error';
+        print('Payment Failed: $errorMessage');
+        // show a snackbar with the error details
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Payment Failed: $errorMessage'),
+              backgroundColor: Colors.red,
+
+
+            )
+        );
+        Navigator.pop(context);
+      }
+    } catch (error) {
+      print('Error occurred while calling the 3API: $error');
+      // show a snackbar with the error details
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error occurred while making the payment: $error'),
+            backgroundColor: Colors.red,
+          )
+      );
+      Navigator.pop(context);
+    }
+
+  }
+
+  void _makeMobileMoneyPayment() {
+    _makePayment();
+  }
+
+  Future<void> _makePickUpPayment() async {
+    print(widget.transaction!.senderProfileId);
+    print(widget.transaction!.beneficiaryProfileId);
+    print(widget.transaction!.amount);
+    print(widget.transaction!.senderCountryId);
+    print(widget.transaction!.beneficiaryCountryId);
+    print(widget.accessToken);
+
+
+    // API endpoint URL
+    final String apiUrl = config.paymentAPI;
+
+    // Request headers
+    Map<String, String> headers = {
+      'X-App-Key': config.appKey,
+      'X-Authorization-Key': config.authorizationKey,
+      'X-Requested-With': config.requestedWith,
+      'Content-Type': config.contentType,
+      'X-Token-Key': widget.accessToken,
+    };
+    //the body
+    Map<String, dynamic> paymentBody = {
+      "transactionTypeId": 2,
+      "senderProfile_id": double.tryParse(widget.transaction!.senderProfileId),
+      "receiverProfile_id": double.tryParse(widget.transaction!.beneficiaryProfileId),
+      "amount": widget.transaction!.amount,
+      "senderCountry_id": double.tryParse(widget.transaction!.senderCountryId),
+      "receiverCountry_id": double.tryParse(widget.transaction!.beneficiaryCountryId),
+      "address":widget.transaction!.address,
+      "paymentDescription": "test",
+    };
+
+    try {
+      // Send the API request
+      http.Response response = await http.post(
+        Uri.parse(apiUrl),
+        headers: headers,
+        body: jsonEncode(paymentBody),
+
+      );
+
+      // Parse the response JSON
+      Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      // Check the response status
+      if (response.statusCode == 200 && responseData['code'] == 'Success') {
+        // show a snackbar to confirm a successful payment
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment initiated has queued for processing'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+
+      } else {
+        // Failed payment
+
+        String errorMessage = responseData['statusDescription'] ?? 'Unknown error';
+        print('Payment Failed: $errorMessage');
+        // show a snackbar with the error details
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Payment Failed: $errorMessage'),
+              backgroundColor: Colors.red,
+
+
+            )
+        );
+        Navigator.pop(context);
+      }
+    } catch (error) {
+      print('Error occurred while calling the 3API: $error');
+      // show a snackbar with the error details
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error occurred while making the payment: $error'),
+            backgroundColor: Colors.red,
+          )
+      );
+      Navigator.pop(context);
+    }
+
+  }
+
 
 
 
@@ -215,17 +394,27 @@ class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
             ],
           ),
           SizedBox(height: 32.0),
-          buildRow(Icons.person,'Name', widget.transaction!.beneficiaryName,),
-          SizedBox(height: 10,),
-          buildRow(Icons.send_outlined,'Delivery Mode', widget.transaction!.deliveryMode),
-          SizedBox(height: 10,),
-          buildRow(Icons.warehouse_outlined,'Account Number', widget.accountNumber),
+
+
+          buildRows(widget.transaction!),
+
           SizedBox(height: 32.0),
+
+
+
+
+
           ElevatedButton(
             onPressed: () {
-              // Perform confirmation action
-              _makePayment();
-             // Navigator.pop(context); // Close the bottom sheet
+              if (widget.transaction!.deliveryMode == 'Bank') {
+                _makeBankPayment();
+              } else if (widget.transaction!.deliveryMode == 'Mobile Money') {
+                _makeMobileMoneyPayment();
+              } else if (widget.transaction!.deliveryMode == 'Pick Up') {
+                _makePickUpPayment();
+              } else {
+                // Handle the case if the delivery mode is not recognized
+              }
             },
             child: Text('Confirm', style: whiteText,),
             style: ButtonStyleConstants.primaryButtonStyle,
@@ -235,7 +424,33 @@ class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
     );
   }
 
-  Widget buildRow(IconData labelIcon, String label, String value) {
+  Widget buildRows(Transaction transaction) {
+    List<Widget> rows = [];
+
+    // Common rows for all delivery modes
+    rows.add(buildRow(Icons.person, 'Name', transaction.beneficiaryName));
+    rows.add(SizedBox(height: 10));
+    rows.add(buildRow(Icons.send_outlined, 'Delivery Mode', transaction.deliveryMode));
+
+    // Rows based on the delivery mode
+    if (transaction.deliveryMode == 'Bank') {
+      rows.add(SizedBox(height: 10));
+      rows.add(buildRow(Icons.warehouse_outlined, 'Account Number', transaction.bankAccount));
+    } else if (transaction.deliveryMode == 'Mobile Money') {
+      rows.add(SizedBox(height: 10));
+      rows.add(buildRow(Icons.phone, 'Phone Number', transaction.beneficiaryPhoneNumber));
+    } else if (transaction.deliveryMode == 'Pick Up') {
+      rows.add(SizedBox(height: 10));
+      rows.add(buildRow(Icons.location_on_outlined, 'Location', transaction.address));
+    }
+
+    return Column(
+      children: rows,
+    );
+  }
+
+
+  Widget buildRow(IconData labelIcon, String label, String? value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -250,10 +465,11 @@ class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
           ],
         ),
         Text(
-          value,
+          value!,
           style: GoogleFonts.inter(fontSize: 14.0, fontWeight: FontWeight.w400,),
         ),
       ],
     );
   }
 }
+

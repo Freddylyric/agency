@@ -412,10 +412,11 @@ class _HomeScreenState extends State<HomeScreen> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               // While data is being fetched, show a CircularProgressIndicator
 
-              return Center(child: Padding(
-                padding: const EdgeInsets.all(40.0),
-                child: CircularProgressIndicator(),
-              ));
+              return LoadingHomeScreen(size: size);
+
+
+
+
             } else if (snapshot.hasError) {
               //performLogout();
               // If an error occurred during fetching
@@ -686,9 +687,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       )
                     else
-
-
-
+                      
                     Container(
                       height: size.height * 0.7,
                       width: size.width * 1,
@@ -809,4 +808,249 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
+}
+
+class LoadingHomeScreen extends StatelessWidget {
+  const LoadingHomeScreen({
+    super.key,
+    required this.size,
+  });
+
+  final Size size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+                  children: [
+                    Container(
+                      //height: size.height * 0.35,
+                        height: 270,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            stops: [0.0146, 0.9879],
+                            colors: [
+                              Color(0xFF00080F),
+                              Color(0xFF00284A),
+                            ],
+                            transform: GradientRotation(136.62 * (3.1415926 / 180.0)),
+                          ),
+                        ),
+                        child: Column(children: [
+                          SizedBox(height: 50),
+                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                            Row(children: [
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                      context, MaterialPageRoute(builder: (context) => ProfileScreen()));
+
+                                },
+                                child: CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: Colors.grey,
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 20,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 5),
+                              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Text(
+                                  'Hello there,',
+                                  style: bodyTextWhite,
+                                ),
+                                Text(
+                                   '',
+                                  style: whiteText,
+                                )
+                              ]),
+                            ]),
+                            Row(children: [
+                              TextButton(
+                                onPressed: () {},
+                                child: Text('KES', style: whiteText,),
+                                style: TextButton.styleFrom(
+                                    backgroundColor: Color(0xff00284A),
+                                    primary: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    )),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.visibility,
+                                  color: Colors.grey,
+                                ),
+                                onPressed: () {
+
+                                },
+                              )
+                            ])
+                          ]),
+
+                          // ACOUNT BALANCE AREA
+
+                          Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [
+                            SizedBox(
+                              height: 30,
+                            ),
+                            Text(
+                              "Account Balance",
+                              style: bodyTextWhite,
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+
+                                Text('Loading...',
+                                  style: mainHeading,
+                                ),
+
+
+
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Text.rich(TextSpan(children: [
+                              TextSpan(
+                                text: "Commission:",
+                                style: bodyTextWhite,
+                              ),
+                              TextSpan(
+                                text: ' ',
+                                style: bodyTextWhite,
+                              )
+                            ]))
+                          ])
+                        ])),
+
+                    Column(children: [
+                      Container(
+                        height: 100,
+                        width: size.width * 1,
+                        child: Row(
+                          // mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(child: GestureDetector(
+                                onTap: () {
+
+                                },
+                                child: HomeTile(tileName: "Send Money", iconTile: Icons.send_outlined))),
+                            Expanded(child: GestureDetector(
+                                onTap: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AddFundsBottomSheet(
+                                        wallet: '100',
+                                      );
+                                    },
+                                  );
+                                },
+                                child: HomeTile(tileName: "Fund Wallet", iconTile: Icons.account_balance_wallet))),
+                            Expanded(child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => AddClientScreen()));
+                                },
+                                child: HomeTile(tileName: "Add Client", iconTile: Icons.person_add_alt_1))),
+                          ],
+                        ),
+
+                      ),
+                      GestureDetector(
+                        onTap: () {
+
+
+                        },
+                        child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            height: 50,
+                            width: size.width * 1,
+                            child: GestureDetector(
+                              onTap: () {
+
+                              },
+                              child: Row(
+
+
+                                  children: [
+                                    Container(
+                                      width: 35,
+                                      height: 35,
+                                      decoration: BoxDecoration(
+                                        color: Colors.yellow,
+                                        shape: BoxShape.rectangle,
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                      child: TextButton(
+                                        onPressed: () {
+                                        },
+                                        child: Text(
+                                          '',
+                                          style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        style: TextButton.styleFrom(
+                                          padding: EdgeInsets.zero,
+                                          alignment: Alignment.center,
+                                        ),
+                                      ),
+                                    ),
+
+                                    SizedBox(width: 5,),
+                                    Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text("Approvals", style: bodyTextBlackBigger,),
+                                          Text("Click to view details", style: bodyTextBlack,),
+                                        ]
+
+                                    ),
+                                    Spacer(),
+                                    Icon(Icons.arrow_forward_ios),
+                                  ]
+                              ),
+                            )
+                        ),
+                      ),
+
+                      Divider(color: Colors.grey,  thickness: 1,),
+                      Container(
+
+                          child: Text("Transactions", style: bodyTextBlackBigger,textAlign: TextAlign.start,)),
+
+                        Container(
+                          height: size.height * 0.7,
+                          width: size.width * 1,
+
+
+                          child:ListView.builder(
+                              padding: EdgeInsets.zero,
+                              itemBuilder:  (context, index) {
+                                return Container(
+                                  height: size.height * 0.1,
+                                  width: size.width * 1,
+                                  child:  Card(
+                                    color: Colors.blueGrey.withOpacity(0.5),
+
+                                  )
+                                );
+                              }
+                          )
+
+                        )
+
+                    ])
+                  ],
+                );
+  }
 }

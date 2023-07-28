@@ -17,6 +17,10 @@ class Transaction {
   String beneficiaryCountryId;
 
   String deliveryMode;
+  String? bankId;
+  String? bankAccount;
+  String? address;
+
 
   Transaction({
     required this.senderProfileId,
@@ -33,6 +37,9 @@ class Transaction {
     required this.theyReceive,
     required this.senderCurrency,
     required this.beneficiaryCurrency,
+    this.bankId,
+    this.address,
+    this.bankAccount
 
   });
 }

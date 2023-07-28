@@ -84,9 +84,25 @@ class _LoginScreenState extends State<LoginScreen> {
         // Failed authentication
         String errorMessage = responseData['statusDescription'] ?? 'Unknown error';
         print('Authentication failed: $errorMessage');
+        //show a snackbar for wrong username/password
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Wrong username/password. Please try again"),
+            backgroundColor: Colors.red,
+          ),
+        );
+
       }
     } catch (error) {
       print('Error occurred while calling the API: $error');
+      //show snackbar for wrong username/password
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please try again later"),
+          backgroundColor: Colors.red,
+        ),
+      );
+
     }
 
     setState(() {

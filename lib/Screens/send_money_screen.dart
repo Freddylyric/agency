@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:searchfield/searchfield.dart';
 
+import '../models/banks_model.dart';
 import '../models/countries_model.dart';
 import '../models/transaction_model.dart';
 import '../models/user_model.dart';
@@ -29,8 +30,9 @@ class SendMoneyScreen extends StatefulWidget {
 class _SendMoneyScreenState extends State<SendMoneyScreen> {
   Transaction? transaction;
 
-  String selectedCountry = 'Kenya';
-  String selectedBank = 'Kenya Commercial Bank';
+  // String selectedCountry = 'Kenya';
+
+
   String selectedSendToOption = '';
   String defaultSenderCurrency = 'USD';
   String defaultBeneficiaryCurrency = 'USD';
@@ -52,11 +54,16 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
   final TextEditingController _transactionFeeController = TextEditingController();
 
   //List<String> countries = ['Kenya', 'Country 2', 'Country 3', 'Country 4'];
-  List<String> banks = ['Kenya Commercial Bank', 'bank 2', 'bank 3', 'bank 4'];
 
+  List<Bank> banks = [];
   List<User> users = [];
   List<Country> countries = [];
   List<Country> baseCurrencies = [];
+
+
+ late String? selectedBank;
+  String? selectedBankId = '';
+
 
   late String selectedSender = '';
   late String selectedBeneficiary = '';
@@ -95,7 +102,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
       print('Error fetching users: $error');
     });
 
-    // Fetch user data when the screen is initialized
+    // Fetch countries data when the screen is initialized
     fetchCountries().then((fetchedCountries) {
       setState(() {
         countries = fetchedCountries;
@@ -103,7 +110,16 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
       });
     }).catchError((error) {
       // Handle error if fetching user data fails
-      print('Error fetching users: $error');
+      print('Error fetching countries: $error');
+    });
+  //fetch banks
+    fetchBanks().then((fetchedBanks) {
+      setState(() {
+        banks = fetchedBanks;
+      });
+    }).catchError((error) {
+      // Handle error if fetching user data fails
+      print('Error fetching banks: $error');
     });
   }
 
@@ -142,6 +158,40 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
       }
     } catch (error) {
       throw Exception('Failed to fetch users: $error');
+    }
+  }
+
+
+
+  Future<List<Bank>> fetchBanks() async {
+    final String apiUrl = config.bankAPI;
+
+    final Map<String, String> headers = {
+      'X-App-Key': config.appKey,
+      'X-Authorization-Key': config.authorizationKey,
+      'X-Requested-With': config.requestedWith,
+      'Content-Type': config.contentType,
+      // 'X-Token-Key': widget.accessToken,
+    };
+
+    try {
+      final http.Response response = await http.get(Uri.parse(apiUrl), headers: headers);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+        if (responseData['code'] == 'Success') {
+          final List<dynamic> banksData = responseData['data']['data'];
+
+          return banksData.map((bankData) => Bank.fromJson(bankData)).toList();
+        } else {
+          throw Exception('Failed to fetch banks: ${responseData['statusDescription']}');
+        }
+      } else {
+        throw Exception('Failed to fetch banks: ${response.statusCode}');
+      }
+    } catch (error) {
+      throw Exception('Failed to fetch banks: $error');
     }
   }
 
@@ -310,12 +360,12 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                   fontSize: 14,
                   color: Colors.black.withOpacity(0.8),
                 ),
-                // validator: (x) {
-                //   if (!users.any((user) => user == x)) {
-                //     return 'Please enter a valid user';
-                //   }
-                //   return null;
-                // },
+                validator: (x) {
+                  if (x == null  || x.isEmpty) {
+                    return 'Please enter a valid user';
+                  }
+                  return null;
+                },
                 searchInputDecoration: InputDecoration(
                   suffixIcon: IconButton(
                     onPressed: () {
@@ -323,7 +373,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                         context: context,
                         builder: (context) {
                           return AlertDialog(
-                            title: Text('Add a Client', textAlign: TextAlign.center),
+                            title: Text('Add a new Client', textAlign: TextAlign.center),
                             content: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
@@ -408,13 +458,12 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                   fontSize: 14,
                   color: Colors.black.withOpacity(0.8),
                 ),
-                // validator: (x) {
-                //   if (!users.any((user) => '${user.firstName} ${user.middleName}  ${user.lastName}' == x) ||
-                //       x!.isEmpty) {
-                //     return 'Please enter a valid User';
-                //   }
-                //   return null;
-                // },
+                validator: (x) {
+                  if (x == null  || x.isEmpty) {
+                    return 'Please enter a valid user';
+                  }
+                  return null;
+                },
                 searchInputDecoration: InputDecoration(
                   suffixIcon: IconButton(
                     onPressed: () {
@@ -422,7 +471,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                         context: context,
                         builder: (context) {
                           return AlertDialog(
-                            title: Text('Add a Client', textAlign: TextAlign.center),
+                            title: Text('Add a new Client', textAlign: TextAlign.center),
                             content: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
@@ -592,6 +641,13 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                     _transactionFeeController.text = NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2).format(transactionFee);
                   });
                 },
+                validator:  (value) {
+                  if (value == null  || value.isEmpty) {
+                    return 'Please enter an amount';
+                  }
+                  return null;
+                },
+
               ),
               SizedBox(height: 5,),
 
@@ -693,15 +749,19 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                 height: 10,
               ),
 
-              TextFormField(
-                controller: _purposeOfPaymentController,
-                decoration: InputDecoration(
-                    labelText: 'Purpose of Payment',
-                    labelStyle: bodyTextBlackBigger,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                    )),
-                style: blueText,
+              Container(
+                width: double.infinity,
+                height: 60,
+                child: TextFormField(
+                  controller: _purposeOfPaymentController,
+                  decoration: InputDecoration(
+                      labelText: 'Purpose of Payment',
+                      labelStyle: bodyTextBlackBigger,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      )),
+                  style: blueText,
+                ),
               ),
 
               SizedBox(height: 8),
@@ -773,41 +833,169 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                     SizedBox(
                       height: 10,
                     ),
-                    DropdownButtonFormField<String>(
-                      value: selectedBank,
-                      onChanged: (value) {
-                        setState(() {
-                          selectedBank = value!;
-                        });
-                      },
-                      items: banks.map((bank) {
-                        return DropdownMenuItem<String>(
-                          value: bank,
-                          child: Text(
-                            bank,
-                            style: blueText,
-                          ),
-                        );
-                      }).toList(),
-                      decoration: InputDecoration(
-                          labelText: 'Bank name',
-                          labelStyle: bodyTextBlackBigger,
-                          border: OutlineInputBorder(
+
+
+                    Container(
+                      width: double.infinity,
+                      height: 60,
+                      child:
+
+
+                      SearchField(
+                        suggestions: banks.map((bank) => SearchFieldListItem<Bank>('${bank.bankName} -   ${bank.paybill}', item: bank)).toList(),
+                        suggestionState: Suggestion.expand,
+                        textInputAction: TextInputAction.next,
+                        hint: 'Select/Search bank',
+                        searchStyle: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black.withOpacity(0.8),
+                        ),
+                        // validator: (x) {
+                        //   if (!users.any((user) => user == x)) {
+                        //     return 'Please enter a valid user';
+                        //   }
+                        //   return null;
+                        // },
+                        searchInputDecoration: InputDecoration(
+
+                          focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                          )),
+                            borderSide: BorderSide(
+                              color: Colors.black.withOpacity(0.8),
+                            ),
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.red),
+                          ),
+                        ),
+                        maxSuggestionsInViewPort: 8,
+                        itemHeight: 40,
+
+                        onSuggestionTap: (SearchFieldListItem<Bank> x) {
+                          selectedBankId = x.item!.bankId;
+
+                          print(selectedBankId);
+
+                        },
+                        validator:  (x) {
+                          if (x == null) {
+                            return 'Please select a valid bank';
+                          }
+                        }
+                      ),
+
+
+
+                      // DropdownSearch<String>(
+                      //     popupProps: PopupProps.menu(
+                      //         showSelectedItems: true,
+                      //         showSearchBox: true,
+                      //         searchFieldProps: TextFieldProps(
+                      //             decoration: InputDecoration(
+                      //                 labelText: 'Select/Search bank',
+                      //               labelStyle: bodyTextBlackBigger,
+                      //
+                      //             ))),
+                      //     items: buildBankDropdownItems(),
+                      //     dropdownDecoratorProps: DropDownDecoratorProps(
+                      //       dropdownSearchDecoration: InputDecoration(
+                      //         label: Text("Bank name"),
+                      //           border:  OutlineInputBorder(
+                      //             borderRadius: BorderRadius.circular(10.0),
+                      //
+                      //
+                      //           )
+                      //
+                      //       ),
+                      //     ),
+                      //     onSaved: (value) async {
+                      //       setState(() {
+                      //               selectedBank = value;
+                      //               selectedBankId =  banks.firstWhere((bank) => bank.bankName == selectedBank).bankId;
+                      //               print(selectedBankId);
+                      //             });
+                      //
+                      //
+                      //     },
+                      //
+                      //     onChanged:  (value) async {
+                      //       setState(() {
+                      //         selectedBank = value;
+                      //         selectedBankId =  banks.firstWhere((bank) => bank.bankName == selectedBank).bankId;
+                      //         print(selectedBankId);
+                      //       });
+                      //
+                      //     }
+                      // ),
                     ),
+                    // DropdownButtonFormField<Bank>(
+                    //   value: selectedBank.bankName,
+                    //   onChanged: (Bank? value) { // Change the type of 'value' to 'Bank?' here
+                    //     setState(() {
+                    //       selectedBank = value;
+                    //     });
+                    //   },
+                    //
+                    //   // onChanged: (value) {
+                    //   //   setState(() {
+                    //   //     selectedBank = value!;
+                    //   //   });
+                    //   // },
+                    //   items: banks.map((bank) {
+                    //     return DropdownMenuItem<Bank>(
+                    //       value: bank,
+                    //       child: Card(
+                    //         child: Container(
+                    //           width: size.width*0.8,
+                    //           height: 40,
+                    //           padding: EdgeInsets.all(8),
+                    //           child: Row(
+                    //             children: [
+                    //               Text(
+                    //                 '${bank.bankName} -',
+                    //                 style: bodyTextBlacker,
+                    //               ),
+                    //               SizedBox(width: 10), // Adjust spacing between bank name and paybill
+                    //               Text(
+                    //                 bank.paybill ?? '',
+                    //                 style: bodyTextBlacker,
+                    //               ),
+                    //             ],
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     );
+                    //   }).toList(),
+                    //   decoration: InputDecoration(
+                    //     labelText: 'Bank name',
+                    //     labelStyle: bodyTextBlackBigger,
+                    //     border: OutlineInputBorder(
+                    //       borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                    //     ),
+                    //   ),
+                    // ),
+
                     SizedBox(
                       height: 10,
                     ),
-                    TextFormField(
-                      controller: _accountNumberController,
-                      decoration: InputDecoration(
-                          labelText: 'Account Number',
-                          labelStyle: bodyTextBlackBigger,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                          )),
-                      style: blueText,
+                    Container(
+                      width: double.infinity,
+                      height:60,
+                      child: TextFormField(
+                        controller: _accountNumberController,
+                        decoration: InputDecoration(
+                            labelText: 'Account Number',
+                            labelStyle: bodyTextBlackBigger,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                            )),
+                        style: blueText,
+                        validator:  (String? value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter account number';
+                          }
+                        }
+                      ),
                     ),
                   ],
                 ),
@@ -822,6 +1010,11 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                         borderRadius: BorderRadius.all(Radius.circular(10.0)),
                       )),
                   style: blueText,
+                  validator:  (String? value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter phone number';
+                    }
+                  }
                 ),
 
               if (selectedSendToOption == sendToOptions[2]) // Pickup selected, show pickup location field
@@ -859,13 +1052,16 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                       theyReceive: theyReceiveAmount,
                       senderCurrency: selectedSenderCurrency,
                       beneficiaryCurrency: selectedBeneficiaryCurrency,
+                      bankId: selectedBankId?? '',
+                      bankAccount: _accountNumberController.text?? '',
+                      address: _pickupLocationController.text?? '',
                     );
 
                     showModalBottomSheet(
                       context: context,
                       builder: (BuildContext context) {
                         return PaymentDetailsBottomSheet(
-                          accountNumber: '12345678',
+
                           accessToken: widget.accessToken,
                           transaction: transaction,
                         );
@@ -918,6 +1114,15 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
     countries.sort((a, b) => a.currency.compareTo(b.currency));
     return countries.map((currency) {
       return currency.currency;
+    }).toList();
+  }
+
+  List<String> buildBankDropdownItems() {
+    //sort in alphabetical order
+    banks.sort((a, b) => a.bankName.compareTo(b.bankName));
+
+    return banks.map((bankName) {
+      return bankName.bankName;
     }).toList();
   }
 
