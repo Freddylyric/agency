@@ -602,6 +602,33 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
 
                     ),
+
+                    Container(
+                      height: 100,
+                      width: size.width * 1,
+                      child: Row(
+                        // mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(child: GestureDetector(
+                              onTap: () {
+
+                                //TODO: scan QR
+                                },
+                              child: HomeTile(tileName: "Scan QR", iconTile: Icons.qr_code_2))),
+                          Expanded(child: GestureDetector(
+                              onTap: () {
+                                //TODO: approvals
+                              },
+                              child: HomeTile(tileName: "Approvals", iconTile: Icons.checklist))),
+                          Expanded(child: GestureDetector(
+                              onTap: () {
+                                //TODO: Reports
+                              },
+                              child: HomeTile(tileName: "Reports", iconTile: Icons.list_alt))),
+                        ],
+                      ),
+
+                    ),
                     GestureDetector(
                       onTap: () {
                         //TODO: navigate to the APprovals

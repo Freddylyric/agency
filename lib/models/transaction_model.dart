@@ -1,4 +1,4 @@
-class Transaction {
+class TransactionRecord {
   String senderProfileId;
   String senderName;
   String senderPhoneNumber;
@@ -22,7 +22,7 @@ class Transaction {
   String? address;
 
 
-  Transaction({
+  TransactionRecord({
     required this.senderProfileId,
     required this.senderName,
     required this.senderPhoneNumber,

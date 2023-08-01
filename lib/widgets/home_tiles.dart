@@ -15,7 +15,7 @@ class HomeTile extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(5),
       decoration: BoxDecoration(
-        border: Border.all(color: Color(0xff9D9D9D), width: 1),
+        border: Border.all(color: Color(0xff9D9D9D), width: 0.5),
       ),
       child: Column(
         children: [

@@ -60,7 +60,7 @@ final bodyTextBlackBigger = GoogleFonts.inter(
 );
 
 final blueText = GoogleFonts.inter(
-  fontSize: 18,
+  fontSize: 15,
   fontWeight: FontWeight.w400,
   height: 18 / 12,
   letterSpacing: 1,

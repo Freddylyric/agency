@@ -17,7 +17,7 @@ class PaymentDetailsBottomSheet extends StatefulWidget {
 
   final String accessToken;
 
-  final Transaction? transaction;
+  final TransactionRecord? transaction;
 
 
 
@@ -424,7 +424,7 @@ class _PaymentDetailsBottomSheetState extends State<PaymentDetailsBottomSheet> {
     );
   }
 
-  Widget buildRows(Transaction transaction) {
+  Widget buildRows(TransactionRecord transaction) {
     List<Widget> rows = [];
 
     // Common rows for all delivery modes

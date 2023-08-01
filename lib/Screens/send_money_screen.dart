@@ -28,7 +28,7 @@ class SendMoneyScreen extends StatefulWidget {
 }
 
 class _SendMoneyScreenState extends State<SendMoneyScreen> {
-  Transaction? transaction;
+  TransactionRecord? transaction;
 
   // String selectedCountry = 'Kenya';
 
@@ -1038,7 +1038,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    transaction = Transaction(
+                    transaction = TransactionRecord(
                       senderProfileId: selectedSender,
                       senderName: senderName ?? '',
                       // Replace with the actual sender name

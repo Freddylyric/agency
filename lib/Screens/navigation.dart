@@ -38,7 +38,7 @@ class _NavPageState extends State<NavPage> {
     super.initState();
     screens = [
       HomeScreen(profileInfo: widget.profileInfo, accessToken: widget.accessToken),
-      SendMoneyScreen(profileInfo: widget.profileInfo, accessToken: widget.accessToken,),
+      TransactionsScreen(accessToken: widget.accessToken,),
       ProfileScreen(),
     ];
   }
