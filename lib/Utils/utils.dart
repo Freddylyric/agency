@@ -37,11 +37,12 @@ final bodyTextWhite = GoogleFonts.inter(
 );
 
 final bodyTextBlack = GoogleFonts.inter(
-  fontSize: 12,
+  fontSize: 14,
   fontWeight: FontWeight.w400,
   height: 15 / 12,
   letterSpacing: 1,
-  color: Color(0xff9D9D9D),
+  color: Color(0xff48494a),
+
 );
 final bodyTextBlacker = GoogleFonts.inter(
   fontSize: 12,

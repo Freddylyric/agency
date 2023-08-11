@@ -7,6 +7,8 @@ import '../models/transaction_record_model.dart';
 import 'package:agency_app/config.dart' as config;
 import 'package:google_fonts/google_fonts.dart';
 
+import 'navigation.dart';
+
 class TransactionsScreen extends StatefulWidget {
   final accessToken;
 
@@ -84,7 +86,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         leading:  IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.black), onPressed: () => Navigator.of(context).pop(),
+          icon: Icon(Icons.arrow_back_ios, color: Colors.black),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context)=>NavPage(profileInfo: null, accessToken: null,)))
         ),
         title: Text('Transactions', style: bodyTextBlackBigger),
         centerTitle: true,

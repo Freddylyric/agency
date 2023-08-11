@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:agency_app/Screens/add_funds_bottomsheet.dart';
+import 'package:agency_app/Screens/clients_details_screen.dart';
 import 'package:agency_app/Screens/pending_transactions_screen.dart';
 import 'package:agency_app/Screens/profile_screen.dart';
 import 'package:agency_app/Screens/send_money_screen.dart';
@@ -13,8 +14,7 @@ import 'package:agency_app/config.dart' as config;
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
-
-
+import '../models/transaction_record_model.dart';
 import '../models/user_model.dart';
 import 'User authentication/login_screen.dart';
 import 'add_client_screen.dart';
@@ -42,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late String? commission= '';
  late List<dynamic> successfulTransactions ;
   late List<dynamic> pendingTransactions ;
+  late List<TransactionRecord> allTransactions;
   late List<User> users;
 
   @override
@@ -51,14 +52,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
     // Fetch user data when the screen is initialized
-    fetchUsers().then((fetchedUsers) {
-      setState(() {
-        users = fetchedUsers;
-      });
-    }).catchError((error) {
-      // Handle error if fetching user data fails
-      print('Error fetching users: $error');
-    });
+    // fetchUsers().then((fetchedUsers) {
+    //   setState(() {
+    //     users = fetchedUsers;
+    //     print("users are ${users.length}");
+    //   });
+    // }).catchError((error) {
+    //   // Handle error if fetching user data fails
+    //   print('Error fetching users: $error');
+    // });
+
+    // fetchTransactions().then((fetchedTransactions) {
+    //   setState(() {
+    //     allTransactions = fetchedTransactions;
+    //   });
+    // }).catchError((error) {
+    //   // Handle error if fetching user data fails
+    //   print('Error fetching transactions: $error');
+    // });
   }
 
 
@@ -334,6 +345,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
+
+
+
   Future<List<dynamic>> _fetchTransactionsByStatus(String apiUrl, Map<String, String> headers) async {
     try {
       // Send the API request
@@ -398,6 +412,43 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Call the helper function to fetch pending transactions
     return _fetchTransactionsByStatus(apiUrl, headers);
+  }
+
+
+  Future<List<TransactionRecord>> fetchTransactions() async {
+    final String apiUrl = config.transactionsAPI;
+
+    final Map<String, String> headers = {
+      'X-App-Key': config.appKey,
+      'X-Authorization-Key': config.authorizationKey,
+      'X-Requested-With': config.requestedWith,
+      'Content-Type': config.contentType,
+      'X-Token-Key': widget.accessToken,
+    };
+
+    try {
+      final http.Response response = await http.get(Uri.parse(apiUrl), headers: headers);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+        if (responseData['code'] == 'Success') {
+          final List<dynamic> allTransactionsData = responseData['data']['data'];
+
+
+          //return usersData.map((userData) => User.fromJson(userData)).toList();
+          return allTransactionsData.map((allTransactionData) => TransactionRecord.fromJson(allTransactionData)).toList();
+
+
+        } else {
+          throw Exception('Failed to fetch transactions: ${responseData['statusDescription']}');
+        }
+      } else {
+        throw Exception('Failed to fetch transactions: ${response.statusCode}');
+      }
+    } catch (error) {
+      throw Exception('Failed to fetch transactions: $error');
+    }
   }
 
 
@@ -619,73 +670,77 @@ class _HomeScreenState extends State<HomeScreen> {
                         ])
                       ])),
 
-                  Column(children: [
-                    Container(
-                      height: 100,
-                      width: size.width * 1,
-                      child: Row(
-                        // mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Expanded(child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => SendMoneyScreen(profileInfo: widget.profileInfo, accessToken: widget.accessToken,)));
-                              },
-                              child: HomeTile(tileName: "Send Money", iconTile: Icons.send_outlined, pendingTransactions: [],))),
-                          Expanded(child: GestureDetector(
-                              onTap: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AddFundsBottomSheet(
-                                      wallet: '100',
-                                    );
-                                  },
-                                );
-                              },
-                              child: HomeTile(tileName: "Fund Wallet", iconTile: Icons.account_balance_wallet, pendingTransactions: [],))),
-                          Expanded(child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => AddClientScreen()));
-                              },
-                              child: HomeTile(tileName: "Add Client", iconTile: Icons.person_add_alt_1, pendingTransactions: [],))),
-                        ],
-                      ),
-
+                  Container(
+                    decoration: BoxDecoration(
+                      border:  Border.all(color: Colors.black, width: 1.0),
                     ),
-
-                    Container(
-                      height: 100,
-                      width: size.width * 1,
-                      child: Row(
-                        // mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Expanded(child: GestureDetector(
-                              onTap: () {
-
-                                //TODO: scan QR
+                    child: Column(children: [
+                      Container(
+                        height: 100,
+                        width: size.width * 1,
+                        child: Row(
+                          // mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => SendMoneyScreen(profileInfo: widget.profileInfo, accessToken: widget.accessToken,)));
                                 },
-                              child: HomeTile(tileName: "Scan QR", iconTile: Icons.qr_code_2, pendingTransactions: [],))),
-                          Expanded(child: GestureDetector(
-                              onTap: () {
-                                //TODO: approvals
+                                child: HomeTile(tileName: "Send Money", iconTile: Icons.send_outlined, pendingTransactions: [],))),
+                            Expanded(child: GestureDetector(
+                                onTap: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AddFundsBottomSheet(
+                                        wallet: '100',
+                                      );
+                                    },
+                                  );
+                                },
+                                child: HomeTile(tileName: "Fund Wallet", iconTile: Icons.account_balance_wallet, pendingTransactions: [],))),
+                            Expanded(child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => AddClientScreen()));
+                                },
+                                child: HomeTile(tileName: "Add Client", iconTile: Icons.person_add_alt_1, pendingTransactions: [],))),
+                          ],
+                        ),
 
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => PendingTransactionsScreen(pendingTransactions: pendingTransactions),
-                                  ),
-                                );
-                              },
-                              child: HomeTile(tileName: "Approvals", iconTile: Icons.checklist, pendingTransactions: pendingTransactions,))),
-                          Expanded(child: GestureDetector(
-                              onTap: () {
-                                //TODO: Reports
-                              },
-                              child: HomeTile(tileName: "Reports", iconTile: Icons.list_alt, pendingTransactions: [],))),
-                        ],
                       ),
 
-                    ),
+                      Container(
+                        height: 100,
+                        width: size.width * 1,
+                        child: Row(
+                          // mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(child: GestureDetector(
+                                onTap: () {
+
+                                  //TODO: scan QR
+                                  },
+                                child: HomeTile(tileName: "Scan QR", iconTile: Icons.qr_code_2, pendingTransactions: [],))),
+                            Expanded(child: GestureDetector(
+                                onTap: () {
+                                  //TODO: approvals
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PendingTransactionsScreen(pendingTransactions: pendingTransactions),
+                                    ),
+                                  );
+                                },
+                                child: HomeTile(tileName: "Approvals", iconTile: Icons.checklist, pendingTransactions: pendingTransactions,))),
+                            Expanded(child: GestureDetector(
+                                onTap: () {
+                                  //TODO: Reports
+                                },
+                                child: HomeTile(tileName: "Reports", iconTile: Icons.list_alt, pendingTransactions: [],))),
+                          ],
+                        ),
+
+                      ),
             //         GestureDetector(
             //           onTap: () {
             //             //TODO: navigate to the APprovals
@@ -758,114 +813,126 @@ class _HomeScreenState extends State<HomeScreen> {
             //           ),
             //         ),
 
-                    // Divider(color: Colors.grey,  thickness: 1,),
-                    Container(
-
-                        child: Text("Transactions", style: bodyTextBlackBigger,textAlign: TextAlign.start,)),
-                    if (successfulTransactions.isEmpty)
+                      // Divider(color: Colors.grey,  thickness: 1,),
                       Container(
-                        height: 500,
-                        width: size.width * 1,
-                        child: Center(
-                          child: Text('No successful transactions found.'),
-                        ),
-                      )
-                    else
-                      
-                    Container(
-                      height: size.height * 0.7,
-                      width: size.width * 1,
 
-
-                      child:
-
-
-
-                      // ListView.builder(
-                      //
-                      //     padding: EdgeInsets.zero,
-                      //     itemCount: successfulTransactions.length,
-                      //     itemBuilder: (context, index) {
-                      //       var transaction = successfulTransactions[index];
-                      //       return ListTile(
-                      //         leading: Stack(
-                      //             children:[
-                      //               CircleAvatar(
-                      //                 radius: 20,
-                      //                 backgroundColor: Colors.grey,
-                      //                 child: Icon(
-                      //                   Icons.person,
-                      //                   size: 20,
-                      //                   color: Colors.black,
-                      //                 ),
-                      //               ),
-                      //               Positioned(
-                      //                 bottom: 0,
-                      //                 right: 0,
-                      //                 child: Container(
-                      //                   height: 20,
-                      //                   width: 20,
-                      //                   decoration: BoxDecoration(
-                      //                     color: Colors.green,
-                      //                     shape: BoxShape.circle,
-                      //                   ),
-                      //                   child: Center(
-                      //                     child: Icon(
-                      //                       Icons.check,
-                      //                       color: Colors.white,
-                      //                       size: 15,
-                      //                     ),
-                      //                   ),
-                      //                 ),
-                      //               ),
-                      //
-                      //             ]
-                      //         ),
-                      //         title: Text(transaction['beneficiaryName'], style: bodyTextBlackBigger,),
-                      //         subtitle: Text(transaction['created_at'], style: bodyTextBlack,),
-                      //         trailing: Text(
-                      //           '${transaction['currencyReceive']} ${formatCurrency(double.tryParse(transaction['amount']) ?? 0.0)}',
-                      //           style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700),
-                      //         ),
-                      //
-                      //       );
-                      //     }),
-
-                      //TODO: display a list of users (name, phoen number)
-                      ListView.builder(
-                          padding: EdgeInsets.zero,
-                          itemCount: users.length, itemBuilder: (context, index) {
-                        var user = users[index];
-                        return ListTile(
-                          leading: Stack(
-                              children:[
-                                CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: Colors.grey,
-                                  child: Icon(
-                                    Icons.person,
-                                    size: 20,
-                                    color: Colors.black,
-
-                                  )
-                                ),
-
-                              ]
+                          child: Text("Clients ${users.length}", style: bodyTextBlackBigger,textAlign: TextAlign.start,)),
+                      if (users.isEmpty)
+                        Container(
+                          height: 500,
+                          width: size.width * 1,
+                          child: Center(
+                            child: Text('No clients found.'),
                           ),
-                          title: Text('${user.firstName} ${user.middleName} ${user.lastName}'),
-                          subtitle: Text(user.msisdn),
+                        )
+                      else
+
+                      Container(
+                        height: size.height * 0.7,
+                        width: size.width * 1,
 
 
-                        );
-                          }
-
-
-                    ),)
+                        child:
 
 
 
+                        // ListView.builder(
+                        //
+                        //     padding: EdgeInsets.zero,
+                        //     itemCount: successfulTransactions.length,
+                        //     itemBuilder: (context, index) {
+                        //       var transaction = successfulTransactions[index];
+                        //       return ListTile(
+                        //         leading: Stack(
+                        //             children:[
+                        //               CircleAvatar(
+                        //                 radius: 20,
+                        //                 backgroundColor: Colors.grey,
+                        //                 child: Icon(
+                        //                   Icons.person,
+                        //                   size: 20,
+                        //                   color: Colors.black,
+                        //                 ),
+                        //               ),
+                        //               Positioned(
+                        //                 bottom: 0,
+                        //                 right: 0,
+                        //                 child: Container(
+                        //                   height: 20,
+                        //                   width: 20,
+                        //                   decoration: BoxDecoration(
+                        //                     color: Colors.green,
+                        //                     shape: BoxShape.circle,
+                        //                   ),
+                        //                   child: Center(
+                        //                     child: Icon(
+                        //                       Icons.check,
+                        //                       color: Colors.white,
+                        //                       size: 15,
+                        //                     ),
+                        //                   ),
+                        //                 ),
+                        //               ),
+                        //
+                        //             ]
+                        //         ),
+                        //         title: Text(transaction['beneficiaryName'], style: bodyTextBlackBigger,),
+                        //         subtitle: Text(transaction['created_at'], style: bodyTextBlack,),
+                        //         trailing: Text(
+                        //           '${transaction['currencyReceive']} ${formatCurrency(double.tryParse(transaction['amount']) ?? 0.0)}',
+                        //           style: GoogleFonts.inter(fontSize: 18.0, fontWeight: FontWeight.w700),
+                        //         ),
+                        //
+                        //       );
+                        //     }),
 
-                  ])
+                        //TODO: display a list of users (name, phoen number)
+                        ListView.builder(
+                            padding: EdgeInsets.zero,
+                            itemCount: users.length,
+                            itemBuilder: (context, index) {
+
+                              // Sort the users list based on their names (firstName, middleName, lastName)
+                             // users.sort((a, b) => (a.firstName! + a.middleName! + a.lastName!).compareTo(b.firstName! + b.middleName! + b.lastName!));
+
+                              var user = users[index];
+
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context)=> ClientDetailsScreen(user: user, transactions: allTransactions,)));
+                            },
+                            child: ListTile(
+                              leading: Stack(
+                                  children:[
+                                    CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.grey,
+                                      child: Icon(
+                                        Icons.person,
+                                        size: 20,
+                                        color: Colors.black,
+
+                                      )
+                                    ),
+
+                                  ]
+                              ),
+                              title: Text('${user.firstName} ${user.middleName} ${user.lastName}', style: bodyTextBlackBigger,),
+                              subtitle: Text(user.msisdn?? "", style: bodyTextBlack,),
+
+
+                            ),
+                          );
+                            }
+
+
+                      ),)
+
+
+
+
+                    ]),
+                  )
                 ],
               );
             }
@@ -881,15 +948,17 @@ class _HomeScreenState extends State<HomeScreen> {
 // Helper method to fetch all required data
   Future<void> _fetchData() async {
     try {
+      List<User> users1 = await fetchUsers();
+      List<TransactionRecord> allTransactions1 = await fetchTransactions();
       List<dynamic> successfulTransactions1 = await fetchSuccessfulTransactions();
       List<dynamic> pendingTransactions1 = await fetchPendingTransactions();
 
+      users = users1;
+      allTransactions = allTransactions1;
       successfulTransactions = successfulTransactions1;
       pendingTransactions = pendingTransactions1;
 
-      // Do whatever you need with the fetched transactions
-      print('Successful Transactions: $successfulTransactions');
-      print('Pending Transactions: $pendingTransactions');
+
     } catch (error) {
       performLogout();
       // Handle errors here
@@ -961,20 +1030,13 @@ class LoadingHomeScreen extends StatelessWidget {
                           SizedBox(height: 50),
                           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                             Row(children: [
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                      context, MaterialPageRoute(builder: (context) => ProfileScreen()));
-
-                                },
-                                child: CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: Colors.grey,
-                                  child: Icon(
-                                    Icons.person,
-                                    size: 20,
-                                    color: Colors.black,
-                                  ),
+                              CircleAvatar(
+                                radius: 20,
+                                backgroundColor: Colors.grey,
+                                child: Icon(
+                                  Icons.person,
+                                  size: 20,
+                                  color: Colors.black,
                                 ),
                               ),
                               SizedBox(width: 5),
@@ -1099,71 +1161,71 @@ class LoadingHomeScreen extends StatelessWidget {
                         ),
 
                       ),
-                      GestureDetector(
-                        onTap: () {
-
-
-                        },
-                        child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 10),
-                            height: 50,
-                            width: size.width * 1,
-                            child: GestureDetector(
-                              onTap: () {
-
-                              },
-                              child: Row(
-
-
-                                  children: [
-                                    Container(
-                                      width: 35,
-                                      height: 35,
-                                      decoration: BoxDecoration(
-                                        color: Colors.yellow,
-                                        shape: BoxShape.rectangle,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: TextButton(
-                                        onPressed: () {
-                                        },
-                                        child: Text(
-                                          '',
-                                          style: GoogleFonts.inter(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets.zero,
-                                          alignment: Alignment.center,
-                                        ),
-                                      ),
-                                    ),
-
-                                    SizedBox(width: 5,),
-                                    Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text("Approvals", style: bodyTextBlackBigger,),
-                                          Text("Click to view details", style: bodyTextBlack,),
-                                        ]
-
-                                    ),
-                                    Spacer(),
-                                    Icon(Icons.arrow_forward_ios),
-                                  ]
-                              ),
-                            )
-                        ),
-                      ),
-
-                      Divider(color: Colors.grey,  thickness: 1,),
+                      // GestureDetector(
+                      //   onTap: () {
+                      //
+                      //
+                      //   },
+                      //   child: Container(
+                      //       padding: EdgeInsets.symmetric(horizontal: 10),
+                      //       height: 50,
+                      //       width: size.width * 1,
+                      //       child: GestureDetector(
+                      //         onTap: () {
+                      //
+                      //         },
+                      //         child: Row(
+                      //
+                      //
+                      //             children: [
+                      //               Container(
+                      //                 width: 35,
+                      //                 height: 35,
+                      //                 decoration: BoxDecoration(
+                      //                   color: Colors.yellow,
+                      //                   shape: BoxShape.rectangle,
+                      //                   borderRadius: BorderRadius.circular(5),
+                      //                 ),
+                      //                 child: TextButton(
+                      //                   onPressed: () {
+                      //                   },
+                      //                   child: Text(
+                      //                     '',
+                      //                     style: GoogleFonts.inter(
+                      //                       fontWeight: FontWeight.bold,
+                      //                       fontSize: 20,
+                      //                       color: Colors.black,
+                      //                     ),
+                      //                   ),
+                      //                   style: TextButton.styleFrom(
+                      //                     padding: EdgeInsets.zero,
+                      //                     alignment: Alignment.center,
+                      //                   ),
+                      //                 ),
+                      //               ),
+                      //
+                      //               SizedBox(width: 5,),
+                      //               Column(
+                      //                   mainAxisAlignment: MainAxisAlignment.center,
+                      //                   crossAxisAlignment: CrossAxisAlignment.start,
+                      //                   children: [
+                      //                     Text("Approvals", style: bodyTextBlackBigger,),
+                      //                     Text("Click to view details", style: bodyTextBlack,),
+                      //                   ]
+                      //
+                      //               ),
+                      //               Spacer(),
+                      //               Icon(Icons.arrow_forward_ios),
+                      //             ]
+                      //         ),
+                      //       )
+                      //   ),
+                      // ),
+                      //
+                      // Divider(color: Colors.grey,  thickness: 1,),
                       Container(
 
-                          child: Text("Transactions", style: bodyTextBlackBigger,textAlign: TextAlign.start,)),
+                          child: Text("Clients", style: bodyTextBlackBigger,textAlign: TextAlign.start,)),
 
                         Container(
                           height: size.height * 0.7,
@@ -1177,7 +1239,7 @@ class LoadingHomeScreen extends StatelessWidget {
                                   height: size.height * 0.1,
                                   width: size.width * 1,
                                   child:  Card(
-                                    color: Colors.blueGrey.withOpacity(0.5),
+                                    color: Colors.white70.withOpacity(0.2),
 
                                   )
                                 );

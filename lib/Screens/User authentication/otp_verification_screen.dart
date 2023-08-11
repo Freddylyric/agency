@@ -31,6 +31,8 @@ class OTPScreen extends StatefulWidget {
 
 class _OTPScreenState extends State<OTPScreen> {
 
+  bool _isVerifying = false;
+
 
   final _storage = const FlutterSecureStorage();
   TextEditingController _otpController = TextEditingController();
@@ -61,6 +63,10 @@ class _OTPScreenState extends State<OTPScreen> {
 
 
   Future<void> _verifyOTP(String phoneNumber, String countryCode, String verificationCode) async {
+
+    setState(() {
+      _isVerifying = true;
+    });
     print(phoneNumber);
     print(verificationCode);
     print(countryCode);
@@ -121,8 +127,8 @@ class _OTPScreenState extends State<OTPScreen> {
         if (authorized == 1 && has == 1) {
           // User has authorized access and can proceed to the home screen
 
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) =>  NavPage(profileInfo: profileInfo!, accessToken: accessToken!,)));
+          Navigator.pushAndRemoveUntil(
+              context, MaterialPageRoute(builder: (context) =>  NavPage(profileInfo: profileInfo!, accessToken: accessToken!,))  , (route) => false);
 
         } else if (authorized == null && has == 1) {
           // User is not authorized, but has the right to add IP
@@ -134,7 +140,10 @@ class _OTPScreenState extends State<OTPScreen> {
             SnackBar(content: Text("You are not authorized")),
           );
 
+
+
           Navigator.pop(context);
+
 
 
         }
@@ -148,6 +157,10 @@ class _OTPScreenState extends State<OTPScreen> {
     } catch (error) {
       print('VError occurred while calling the API: $error');
     }
+
+    setState(() {
+      _isVerifying = false;
+    });
   }
 
 
@@ -300,12 +313,18 @@ class _OTPScreenState extends State<OTPScreen> {
                   SizedBox(height: 30,),
                   SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton(onPressed: (){
-                        verCode = _otpController.text;
-
-                        _verifyOTP(phoneNumber, countryCode, verCode);
-                      }, child: Text("NEXT", style: whiteText),
-                        style: ButtonStyleConstants.primaryButtonStyle,)),
+                      child:
+                      ElevatedButton(
+                        onPressed: _isVerifying ? null : () {
+                          verCode = _otpController.text;
+                          _verifyOTP(phoneNumber, countryCode, verCode);
+                        },
+                        child: _isVerifying
+                            ? const CircularProgressIndicator()
+                            : Text("NEXT", style: whiteText),
+                        style: ButtonStyleConstants.primaryButtonStyle,
+                      )
+                  ),
 
 
                 ],

@@ -9,7 +9,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'add_funds_bottomsheet.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  // final String username;
+  // final String phone;
+
+  const ProfileScreen({Key? key, }) : super(key: key);
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -66,11 +69,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       SizedBox(height: 8.0),
                       Text(
-                        "John Doe", style: mainHeading,
+                        //widget.username??
+                            'John Doe', style: mainHeading,
                       ),
                       SizedBox(height: 4.0),
                       Text(
-                        "Phone Number", style: subHeading,
+                        //widget.phone??
+                            '0722345678', style: subHeading,
                       ),
                     ]
                 ),
@@ -138,9 +143,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             await _storage.deleteAll();
 
 
-                            Navigator.pushReplacement(
+                            Navigator.pushAndRemoveUntil(
                               context,
-                              MaterialPageRoute(builder: (context) => const LoginScreen()),
+                              MaterialPageRoute(builder: (context) => const LoginScreen()  ), (route) => false
                             );
                           },
                           child: ListTile(
